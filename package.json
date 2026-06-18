@@ -1,0 +1,16 @@
+{
+  "name": "recruitment-management-system",
+  "version": "1.0.0",
+  "description": "招聘面试管理系统 - 评价Offer催办功能",
+  "scripts": {
+    "install:all": "npm install && cd client && npm install && cd ../server && npm install",
+    "start:client": "cd client && ng serve --open",
+    "start:server": "cd server && npm run dev",
+    "start": "concurrently \"npm run start:server\" \"npm run start:client\"",
+    "build:client": "cd client && ng build",
+    "build:server": "cd server && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
