@@ -44,16 +44,37 @@ app.use((req, res) => {
 });
 
 async function startServer() {
+  let connected = false;
   try {
     await mongoose.connect(MONGODB_URI);
     console.log('✅ MongoDB 连接成功');
     console.log(`   数据库地址: ${MONGODB_URI}`);
+    connected = true;
   } catch (err) {
-    console.error('❌ MongoDB 连接失败:', err.message);
-    console.log('\n💡 提示: 请确保 MongoDB 服务已启动');
-    console.log('   如未安装 MongoDB，可使用 Homebrew 安装: brew install mongodb-community');
-    console.log('   启动命令: brew services start mongodb-community');
-    console.log('\n⚠️  没有 MongoDB 也可以启动，但接口将无法正常工作');
+    console.warn('⚠️  本地 MongoDB 连接失败，尝试启动内存数据库...');
+    try {
+      const { MongoMemoryServer } = require('mongodb-memory-server');
+      const mongod = await MongoMemoryServer.create();
+      const uri = mongod.getUri();
+      await mongoose.connect(uri);
+      console.log('✅ 内存数据库启动成功');
+      console.log(`   数据库地址: ${uri}`);
+      connected = true;
+    } catch (memErr) {
+      console.error('❌ 内存数据库也启动失败:', memErr.message);
+    }
+  }
+
+  if (connected) {
+    const Candidate = require('./models/Candidate');
+    const candidateCount = await Candidate.countDocuments();
+    if (candidateCount === 0) {
+      console.log('\n🌱 检测到数据库为空, 正在自动初始化测试数据...');
+      const { seed } = require('./seed');
+      await seed();
+    } else {
+      console.log(`   当前数据量: ${candidateCount} 名候选人`);
+    }
   }
 
   app.listen(PORT, () => {

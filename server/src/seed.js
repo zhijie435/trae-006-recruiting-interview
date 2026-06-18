@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
 
-const Candidate = require('../models/Candidate');
-const Interviewer = require('../models/Interviewer');
-const Interview = require('../models/Interview');
-const Reminder = require('../models/Reminder');
-const Evaluation = require('../models/Evaluation');
-const Offer = require('../models/Offer');
-const ScheduleConflict = require('../models/ScheduleConflict');
-const CandidateCommunication = require('../models/CandidateCommunication');
+const Candidate = require('./models/Candidate');
+const Interviewer = require('./models/Interviewer');
+const Interview = require('./models/Interview');
+const Reminder = require('./models/Reminder');
+const Evaluation = require('./models/Evaluation');
+const Offer = require('./models/Offer');
+const ScheduleConflict = require('./models/ScheduleConflict');
+const CandidateCommunication = require('./models/CandidateCommunication');
 
 const candidatesData = [
   { name: '张三', email: 'zhangsan@example.com', phone: '13800138001', position: '前端工程师', department: '技术部' },

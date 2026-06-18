@@ -35,7 +35,9 @@ async function getReminderList(query) {
     const thresholdDate = new Date();
     thresholdDate.setDate(thresholdDate.getDate() - parseInt(overdueDays));
     matchStage.evaluationDeadline = { $lte: thresholdDate };
-    matchStage.evaluationStatus = 'overdue';
+    if (!evaluationStatus) {
+      matchStage.evaluationStatus = 'overdue';
+    }
   }
 
   const pipeline = [

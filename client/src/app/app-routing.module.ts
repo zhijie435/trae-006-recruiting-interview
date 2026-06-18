@@ -8,9 +8,17 @@ import { OfferDetailComponent } from './components/offer-detail/offer-detail.com
 import { ScheduleConflictListComponent } from './components/schedule-conflict-list/schedule-conflict-list.component';
 import { CandidateListComponent } from './components/candidate-list/candidate-list.component';
 import { CandidateDetailComponent } from './components/candidate-detail/candidate-detail.component';
+import { FollowUpDashboardComponent } from './components/follow-up-dashboard/follow-up-dashboard.component';
+import { FollowUpListComponent } from './components/follow-up-list/follow-up-list.component';
+import { FollowUpDetailComponent } from './components/follow-up-detail/follow-up-detail.component';
+import { FollowUpTemplateComponent } from './components/follow-up-template/follow-up-template.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/candidates', pathMatch: 'full' },
+  { path: '', redirectTo: '/follow-up-dashboard', pathMatch: 'full' },
+  { path: 'follow-up-dashboard', component: FollowUpDashboardComponent },
+  { path: 'offer-follow-ups', component: FollowUpListComponent },
+  { path: 'offer-follow-ups/:id', component: FollowUpDetailComponent },
+  { path: 'follow-up-templates', component: FollowUpTemplateComponent },
   { path: 'candidates', component: CandidateListComponent },
   { path: 'candidates/:id', component: CandidateDetailComponent },
   { path: 'reminders', component: ReminderListComponent },
