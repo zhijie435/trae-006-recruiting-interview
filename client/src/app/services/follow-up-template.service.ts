@@ -1,76 +1,75 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
+import { MockRepository, formatDate } from '../core/mock.repository';
 import {
   FollowUpTemplate,
   FollowUpChannel,
-  OfferFollowUp,
-  TEMPLATE_VARIABLES
+  OfferFollowUp
 } from '../models/offer-follow-up.model';
-import { MockRepository } from '../core/mock.repository';
 
 @Injectable({ providedIn: 'root' })
 export class FollowUpTemplateService {
   constructor(private repo: MockRepository) {}
 
-  list(channel?: FollowUpChannel): Observable<FollowUpTemplate[]> {
-    return of(this.repo.getTemplates(channel));
+  list(): Observable<FollowUpTemplate[]> {
+    return of(this.repo.getTemplates());
   }
 
-  getById(id: string): Observable<FollowUpTemplate | undefined> {
-    return of(this.repo.getTemplateById(id));
+  create(input: { name: string; channel: FollowUpChannel; content: string }): Observable<FollowUpTemplate> {
+    const now = new Date().toISOString();
+    const tpl: FollowUpTemplate = {
+      id: this.repo.genId('tpl'),
+      name: input.name,
+      channel: input.channel,
+      content: input.content,
+      enabled: true,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.repo.addTemplate(tpl);
+    return of(tpl);
   }
 
-  create(data: {
-    name: string;
-    channel: FollowUpChannel;
-    content: string;
-  }): Observable<FollowUpTemplate> {
-    return of(this.repo.createTemplate({
-      name: data.name,
-      channel: data.channel,
-      content: data.content,
-      enabled: true
-    }));
+  update(id: string, input: { name: string; channel: FollowUpChannel; content: string }): Observable<FollowUpTemplate | null> {
+    return of(this.repo.updateTemplate(id, input));
   }
 
-  update(id: string, data: Partial<Pick<FollowUpTemplate, 'name' | 'channel' | 'content'>>): Observable<FollowUpTemplate | undefined> {
-    return of(this.repo.updateTemplate(id, data));
+  toggleEnabled(id: string, enabled: boolean): Observable<boolean> {
+    const tpl = this.repo.updateTemplate(id, { enabled });
+    return of(!!tpl);
+  }
+
+  duplicate(id: string): Observable<FollowUpTemplate | null> {
+    const src = this.repo.getTemplateById(id);
+    if (!src) return of(null);
+    const now = new Date().toISOString();
+    const copy: FollowUpTemplate = {
+      id: this.repo.genId('tpl'),
+      name: `${src.name} (副本)`,
+      channel: src.channel,
+      content: src.content,
+      enabled: src.enabled,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.repo.addTemplate(copy);
+    return of(copy);
   }
 
   remove(id: string): Observable<boolean> {
-    return of(this.repo.deleteTemplate(id));
+    return of(this.repo.removeTemplate(id));
   }
 
-  duplicate(id: string): Observable<FollowUpTemplate | undefined> {
-    return of(this.repo.duplicateTemplate(id));
-  }
-
-  toggleEnabled(id: string, enabled: boolean): Observable<FollowUpTemplate | undefined> {
-    return of(this.repo.toggleTemplate(id, enabled));
-  }
-
-  render(template: string, offer?: OfferFollowUp): string {
-    if (!template) return '';
-    let result = template;
-
-    const varMap: Record<string, string> = {
-      '{{候选人姓名}}': offer?.candidateName || '{{候选人姓名}}',
-      '{{职位名称}}': offer?.position || '{{职位名称}}',
-      '{{部门名称}}': offer?.department || '{{部门名称}}',
-      '{{薪资待遇}}': offer?.salaryPackage || '{{薪资待遇}}',
-      '{{入职日期}}': offer?.entryDate || '{{入职日期}}',
-      '{{Offer编号}}': offer?.offerNo || '{{Offer编号}}',
-      '{{SLA截止时间}}': offer?.expireAt ? new Date(offer.expireAt).toLocaleString('zh-CN') : '{{SLA截止时间}}'
-    };
-
-    for (const key of Object.keys(varMap)) {
-      result = result.split(key).join(varMap[key]);
-    }
-
+  render(content: string, offer: OfferFollowUp): string {
+    let result = content;
+    result = result.replace(/\$\{candidateName\}/g, offer.candidateName || '');
+    result = result.replace(/\$\{position\}/g, offer.position || '');
+    result = result.replace(/\$\{department\}/g, offer.department || '');
+    result = result.replace(/\$\{salaryPackage\}/g, offer.salaryPackage || '');
+    result = result.replace(/\$\{entryDate\}/g, offer.entryDate || '');
+    result = result.replace(/\$\{offerNo\}/g, offer.offerNo || '');
+    result = result.replace(/\$\{expireDate\}/g, formatDate(offer.expireAt) || '');
+    result = result.replace(/\$\{owner\}/g, offer.owner || '');
     return result;
-  }
-
-  getVariables() {
-    return TEMPLATE_VARIABLES;
   }
 }

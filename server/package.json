@@ -8,7 +8,9 @@
     "dev": "nodemon src/index.js",
     "seed": "node src/seed.js",
     "test": "jest --verbose",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "lint": "eslint \"src/**/*.js\"",
+    "lint:fix": "eslint \"src/**/*.js\" --fix"
   },
   "jest": {
     "testEnvironment": "node",
@@ -24,6 +26,7 @@
     "nodemailer": "^6.9.13"
   },
   "devDependencies": {
+    "eslint": "^8.57.0",
     "jest": "^30.4.2",
     "mongodb-memory-server": "^11.2.0",
     "nodemon": "^3.1.0",
