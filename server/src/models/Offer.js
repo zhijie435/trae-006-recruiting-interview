@@ -15,6 +15,12 @@ const approvalLogSchema = new mongoose.Schema({
   operatedAt: { type: Date, default: Date.now }
 }, { _id: false });
 
+const reminderLogSchema = new mongoose.Schema({
+  remindedBy: { type: String, required: true },
+  reminderNote: { type: String, default: '' },
+  remindedAt: { type: Date, default: Date.now }
+}, { _id: false });
+
 const offerSchema = new mongoose.Schema({
   offerNo: { type: String, required: true, unique: true },
   candidateName: { type: String, required: true },
@@ -55,6 +61,9 @@ const offerSchema = new mongoose.Schema({
   currentStep: { type: Number, default: 0 },
 
   approvalLogs: [approvalLogSchema],
+
+  reminderCount: { type: Number, default: 0 },
+  reminderLogs: [reminderLogSchema],
 
   createdBy: { type: String, default: 'system' },
   updatedBy: { type: String, default: 'system' }

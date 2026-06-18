@@ -31,6 +31,13 @@ export interface ApprovalLog {
   operatedAtText?: string;
 }
 
+export interface ReminderLog {
+  remindedBy: string;
+  reminderNote?: string;
+  remindedAt: string;
+  remindedAtText?: string;
+}
+
 export interface Offer {
   id: string;
   offerNo: string;
@@ -54,6 +61,8 @@ export interface Offer {
   statusColor?: string;
   currentStep?: number;
   approvalLogs?: ApprovalLog[];
+  reminderCount?: number;
+  reminderLogs?: ReminderLog[];
   createdAt: string;
   createdAtText?: string;
   updatedAt: string;

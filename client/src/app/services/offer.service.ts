@@ -77,4 +77,8 @@ export class OfferService {
   withdraw(id: string, comment: string, operator = 'system'): Observable<Offer> {
     return this.http.post<Offer>(`${this.apiUrl}/${id}/withdraw`, { comment, operator });
   }
+
+  sendApprovalReminder(id: string, reminderNote: string, operator = 'system'): Observable<Offer> {
+    return this.http.post<Offer>(`${this.apiUrl}/${id}/remind-approval`, { reminderNote, operator });
+  }
 }

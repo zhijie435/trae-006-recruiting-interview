@@ -389,8 +389,133 @@ function buildConflictReminderEmailContent(conflict, note) {
   `;
 }
 
+async function sendOfferApprovalReminderEmail(offer, reminderNote) {
+  const approverEmails = ['approver@example.com'];
+  const approverNames = ['审批人'];
+
+  const mailOptions = {
+    from: process.env.SMTP_FROM || '招聘管理系统 <noreply@example.com>',
+    to: approverEmails.join(','),
+    subject: `【催办】请及时审批 Offer - ${offer.offerNo}`,
+    html: buildOfferApprovalReminderEmailContent(offer, approverNames.join('、'), reminderNote)
+  };
+
+  const smtpTransporter = createTransporter();
+
+  if (!smtpTransporter) {
+    console.log(`
+==================== 模拟邮件发送 ====================
+收件人: ${approverEmails.join(', ')}
+主题: ${mailOptions.subject}
+----------------------------------------------------
+${mailOptions.html.replace(/<[^>]*>/g, '')}
+====================================================
+    `);
+    return { success: true, mock: true };
+  }
+
+  try {
+    const info = await smtpTransporter.sendMail(mailOptions);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('邮件发送失败:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+function buildOfferApprovalReminderEmailContent(offer, approverName, reminderNote) {
+  const submitLog = (offer.approvalLogs || []).find(log => log.action === 'submit');
+  const submitTime = submitLog ? formatDateTime(submitLog.operatedAt) : formatDateTime(offer.createdAt);
+
+  const now = new Date();
+  const submitDate = submitLog ? new Date(submitLog.operatedAt) : new Date(offer.createdAt);
+  const daysPending = Math.floor((now - submitDate) / (1000 * 60 * 60 * 24));
+  const isOverdue = daysPending >= 2;
+
+  return `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background: linear-gradient(135deg, ${isOverdue ? '#fa541c' : '#1890ff'} 0%, ${isOverdue ? '#d4380d' : '#096dd9'} 100%); padding: 24px; color: white; border-radius: 8px 8px 0 0;">
+        <h2 style="margin: 0; font-size: 20px;">Offer 审批催办通知</h2>
+      </div>
+      <div style="background: #fff; padding: 24px; border: 1px solid #f0f0f0; border-top: none; border-radius: 0 0 8px 8px;">
+        <p style="margin: 0 0 16px; font-size: 16px; color: rgba(0,0,0,0.88);">
+          您好，<strong>${approverName}</strong>：
+        </p>
+        <div style="background: ${isOverdue ? '#fff2f0' : '#e6f4ff'}; border: 1px solid ${isOverdue ? '#ffccc7' : '#91caff'}; border-radius: 6px; padding: 16px; margin-bottom: 20px;">
+          <p style="margin: 0; font-size: 15px; color: ${isOverdue ? '#cf1322' : '#0958d9'}; font-weight: 500;">
+            ${isOverdue
+              ? '⚠️ 该 Offer 审批已等待 ' + daysPending + ' 天，请您尽快处理！'
+              : '📢 请您及时处理待审批的 Offer'}
+          </p>
+        </div>
+        <p style="margin: 0 0 12px; font-size: 14px; color: rgba(0,0,0,0.88);">
+          以下是待审批的 Offer 详情：
+        </p>
+        <table style="width: 100%; border-collapse: collapse; margin: 16px 0 24px; background: #fafafa; border-radius: 6px; overflow: hidden;">
+          <tr>
+            <td style="padding: 12px 16px; border-bottom: 1px solid #f0f0f0; width: 120px; color: rgba(0,0,0,0.45); font-size: 13px;">Offer 编号</td>
+            <td style="padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-family: monospace; font-size: 14px; color: #1890ff; font-weight: 500;">${offer.offerNo}</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 16px; border-bottom: 1px solid #f0f0f0; width: 120px; color: rgba(0,0,0,0.45); font-size: 13px;">候选人</td>
+            <td style="padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-size: 15px; color: rgba(0,0,0,0.88); font-weight: 500;">${offer.candidateName}</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 16px; border-bottom: 1px solid #f0f0f0; width: 120px; color: rgba(0,0,0,0.45); font-size: 13px;">应聘岗位</td>
+            <td style="padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: rgba(0,0,0,0.88);">${offer.position}</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 16px; border-bottom: 1px solid #f0f0f0; width: 120px; color: rgba(0,0,0,0.45); font-size: 13px;">所属部门</td>
+            <td style="padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: rgba(0,0,0,0.88);">${offer.department}</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 16px; border-bottom: 1px solid #f0f0f0; width: 120px; color: rgba(0,0,0,0.45); font-size: 13px;">月薪</td>
+            <td style="padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #fa541c; font-weight: 500;">
+              ${offer.salaryMonthly ? '¥' + offer.salaryMonthly.toLocaleString('zh-CN') + ' × ' + offer.salaryMonths + '个月' : '待确定'}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 16px; border-bottom: 1px solid #f0f0f0; width: 120px; color: rgba(0,0,0,0.45); font-size: 13px;">入职日期</td>
+            <td style="padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: rgba(0,0,0,0.88);">
+              ${offer.entryDate ? formatDateTime(offer.entryDate).split(' ')[0] : '待确定'}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 16px; width: 120px; color: rgba(0,0,0,0.45); font-size: 13px;">提交时间</td>
+            <td style="padding: 12px 16px; font-size: 14px; color: ${isOverdue ? '#cf1322' : 'rgba(0,0,0,0.88)'};">
+              ${submitTime}${isOverdue ? '（已等待 ' + daysPending + ' 天）' : ''}
+            </td>
+          </tr>
+        </table>
+        ${reminderNote ? `
+          <div style="background: #f0f5ff; border: 1px solid #adc6ff; border-radius: 6px; padding: 16px; margin-bottom: 20px;">
+            <div style="font-size: 13px; color: rgba(0,0,0,0.45); margin-bottom: 4px;">催办备注</div>
+            <div style="font-size: 14px; color: #1d39c4;">${reminderNote}</div>
+          </div>
+        ` : ''}
+        <div style="background: #fafafa; padding: 16px; border-radius: 6px; margin-bottom: 20px;">
+          <p style="margin: 0 0 8px; font-size: 14px; color: rgba(0,0,0,0.88); font-weight: 500;">📝 请您完成以下操作：</p>
+          <ol style="margin: 0; padding-left: 20px; font-size: 14px; color: rgba(0,0,0,0.65); line-height: 1.8;">
+            <li>登录招聘面试管理系统</li>
+            <li>进入「Offer 审批管理」页面</li>
+            <li>找到 Offer「${offer.offerNo}」并完成审批</li>
+          </ol>
+        </div>
+        <p style="margin: 0; font-size: 13px; color: rgba(0,0,0,0.45); line-height: 1.6;">
+          此邮件由系统自动发送，请勿直接回复。如有问题请联系 HR。<br />
+          感谢您的配合，及时审批有助于高效推进招聘流程。
+        </p>
+      </div>
+      <div style="text-align: center; padding: 16px; font-size: 12px; color: rgba(0,0,0,0.25);">
+        © 2026 招聘面试管理系统
+      </div>
+    </div>
+  `;
+}
+
 module.exports = {
   sendEvaluationReminderEmail,
   sendScheduleConflictEmail,
-  sendConflictReminderEmail
+  sendConflictReminderEmail,
+  sendOfferApprovalReminderEmail
 };

@@ -1,4 +1,5 @@
 const Offer = require('../models/Offer');
+const emailService = require('./emailService');
 
 const STATUS_META = {
   draft: { label: '草稿', color: 'default' },
@@ -326,6 +327,47 @@ function formatDate(date) {
   return `${year}-${month}-${day} ${hours}:${minutes}`;
 }
 
+async function sendApprovalReminder(id, operator, reminderNote = '') {
+  const offer = await Offer.findById(id);
+  if (!offer) {
+    throw new Error('Offer 不存在');
+  }
+
+  if (offer.status !== 'pending_approval') {
+    throw new Error(`当前状态「${STATUS_META[offer.status].label}」不允许催办`);
+  }
+
+  const reminderInterval = 30 * 60 * 1000;
+  const lastReminder = offer.reminderLogs && offer.reminderLogs.length > 0
+    ? offer.reminderLogs[offer.reminderLogs.length - 1]
+    : null;
+
+  if (lastReminder) {
+    const timeSinceLastReminder = Date.now() - new Date(lastReminder.remindedAt).getTime();
+    if (timeSinceLastReminder < reminderInterval) {
+      const remainingMinutes = Math.ceil((reminderInterval - timeSinceLastReminder) / 60000);
+      throw new Error(`催办过于频繁，请在 ${remainingMinutes} 分钟后再试`);
+    }
+  }
+
+  offer.reminderLogs.push({
+    remindedBy: operator,
+    reminderNote,
+    remindedAt: new Date()
+  });
+  offer.reminderCount = (offer.reminderCount || 0) + 1;
+  offer.updatedBy = operator;
+
+  await offer.save();
+
+  await emailService.sendOfferApprovalReminderEmail(offer.toObject(), reminderNote);
+
+  return {
+    ...decorateOffer(offer.toObject()),
+    message: '催办通知已发送'
+  };
+}
+
 module.exports = {
   getOfferList,
   getOfferStatistics,
@@ -334,6 +376,7 @@ module.exports = {
   updateOffer,
   transition,
   submitOffer,
+  sendApprovalReminder,
   STATUS_META,
   EMPLOYMENT_TYPE_MAP
 };

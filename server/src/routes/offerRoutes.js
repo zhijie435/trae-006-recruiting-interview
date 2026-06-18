@@ -150,4 +150,16 @@ router.post('/:id/withdraw', async (req, res) => {
   }
 });
 
+router.post('/:id/remind-approval', async (req, res) => {
+  try {
+    const operator = req.query.operator || req.body.operator || 'system';
+    const reminderNote = req.body.reminderNote || '';
+    const result = await offerService.sendApprovalReminder(req.params.id, operator, reminderNote);
+    res.json(result);
+  } catch (error) {
+    console.error('发送催办失败:', error);
+    res.status(500).json({ message: error.message || '发送催办失败' });
+  }
+});
+
 module.exports = router;

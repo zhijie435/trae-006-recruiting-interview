@@ -33,6 +33,7 @@ import { NzTimelineModule } from 'ng-zorro-antd/timeline';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzPageHeaderModule } from 'ng-zorro-antd/page-header';
+import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -82,7 +83,8 @@ import {
   StarOutline,
   StarFill,
   ArrowLeftOutline,
-  WarningOutline
+  WarningOutline,
+  InfoCircleOutline
 } from '@ant-design/icons-angular/icons';
 
 const icons: IconDefinition[] = [
@@ -121,7 +123,8 @@ const icons: IconDefinition[] = [
   StarOutline,
   StarFill,
   ArrowLeftOutline,
-  WarningOutline
+  WarningOutline,
+  InfoCircleOutline
 ];
 
 @NgModule({
@@ -132,7 +135,9 @@ const icons: IconDefinition[] = [
     EvaluationFormComponent,
     OfferListComponent,
     OfferDetailComponent,
-    ConflictListComponent
+    ScheduleConflictListComponent,
+    CandidateListComponent,
+    CandidateDetailComponent
   ],
   imports: [
     BrowserModule,
@@ -167,6 +172,9 @@ const icons: IconDefinition[] = [
     NzDividerModule,
     NzTimelineModule,
     NzFormModule,
+    NzTabsModule,
+    NzPageHeaderModule,
+    NzDescriptionsModule,
     NzIconModule.forRoot(icons)
   ],
   providers: [],
