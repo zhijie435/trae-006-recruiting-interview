@@ -372,6 +372,8 @@ export class FollowUpDashboardComponent implements OnInit {
   formatDateTime = formatDateTime;
   getStatusInfo = getStatusInfo;
   getChannelInfo = getChannelInfo;
+  getHoursUntil = getHoursUntil;
+  Math = Math;
 
   isOverdue(item: OfferFollowUp): boolean {
     return getHoursUntil(item.expireAt) <= 0 && item.status === 'PENDING';

@@ -38,6 +38,9 @@ import { NzProgressModule } from 'ng-zorro-antd/progress';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzCollapseModule } from 'ng-zorro-antd/collapse';
+import { NzStepsModule } from 'ng-zorro-antd/steps';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -205,6 +208,9 @@ const icons: IconDefinition[] = [
     NzSwitchModule,
     NzAlertModule,
     NzStatisticModule,
+    NzDropDownModule,
+    NzCollapseModule,
+    NzStepsModule,
     NzIconModule.forRoot(icons)
   ],
   providers: [],

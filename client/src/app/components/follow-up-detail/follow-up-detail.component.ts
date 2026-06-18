@@ -40,7 +40,7 @@ import {
             <div>
               <div style="display: flex; align-items: center; gap: 12px;">
                 <h1 style="margin: 0; font-size: 22px; font-weight: 600;">{{ offer.candidateName }}</h1>
-                <nz-tag [nzColor]="getStatusInfo(offer.status).color" [nzStyle]="{ background: '#fff' }">
+                <nz-tag [nzColor]="getStatusInfo(offer.status).color" [style.background]="'#fff'">
                   {{ getStatusInfo(offer.status).label }}
                 </nz-tag>
               </div>
@@ -169,7 +169,8 @@ import {
             </nz-timeline>
 
             <div *ngIf="filteredRecords.length === 0" class="empty-state">
-              <nz-empty [nzNotFoundDescription]="'暂无催办记录'"></nz-empty>
+              <nz-empty></nz-empty>
+              <div style="color: rgba(0,0,0,0.25); margin-top: -20px;">暂无催办记录</div>
             </div>
           </nz-card>
         </nz-col>
@@ -198,7 +199,7 @@ import {
                 [nzPercent]="getSlaPercent()"
                 [nzStatus]="getSlaStatus()"
                 [nzStrokeColor]="getSlaColor()"
-                nzShowInfo="false"
+                [nzShowInfo]="false"
               ></nz-progress>
               <div class="sla-status-tag" [ngStyle]="{ background: getStatusInfo(offer.status).bgColor, color: getStatusInfo(offer.status).color }">
                 当前状态：{{ getStatusInfo(offer.status).label }}

@@ -56,7 +56,8 @@ export enum PermissionAction {
   REJECT = 'reject',
   SEND = 'send',
   REMIND = 'remind',
-  EXPORT = 'export'
+  EXPORT = 'export',
+  WITHDRAW = 'withdraw'
 }
 
 // ============================================

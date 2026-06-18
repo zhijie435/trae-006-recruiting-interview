@@ -8,6 +8,7 @@ import {
 
 export type OfferStatusAlias = OfferStatus;
 export type OfferActionAlias = OfferAction;
+export { OfferStatus, OfferAction, EmploymentType };
 
 export interface ApprovalLog {
   step: number;

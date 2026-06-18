@@ -163,7 +163,7 @@ import {
                 </nz-tag>
               </td>
               <td>
-                <nz-tag [nzColor]="getStatusInfo(data.status).color" [nzStyle]="{ background: getStatusInfo(data.status).bgColor }">
+                <nz-tag [nzColor]="getStatusInfo(data.status).color" [style.background]="getStatusInfo(data.status).bgColor">
                   {{ getStatusInfo(data.status).label }}
                 </nz-tag>
               </td>
@@ -177,24 +177,15 @@ import {
                 <button *ngIf="data.status === 'PENDING'" nz-button nzType="link" nzSize="small" (click)="openFollowUpModal(data)">
                   <i nz-icon nzType="message"></i>催办
                 </button>
-                <nz-dropdown *ngIf="data.status === 'PENDING'" nzTrigger="click" [nzDropdownMenu]="statusMenu">
-                  <a nz-button nzType="link" nzSize="small" nz-dropdown>
-                    状态 <i nz-icon nzType="down"></i>
-                  </a>
-                  <nz-dropdown-menu #statusMenu="nzDropdownMenu">
-                    <ul nz-menu>
-                      <li nz-menu-item (click)="changeStatus(data, 'ACCEPTED')">
-                        <i nz-icon nzType="check-circle" style="color: #2E7D6B;"></i> 标记已接受
-                      </li>
-                      <li nz-menu-item (click)="changeStatus(data, 'REJECTED')">
-                        <i nz-icon nzType="close-circle" style="color: #B5462F;"></i> 标记已拒绝
-                      </li>
-                      <li nz-menu-item (click)="changeStatus(data, 'EXPIRED')">
-                        <i nz-icon nzType="clock-circle" style="color: #8A8F98;"></i> 标记已过期
-                      </li>
-                    </ul>
-                  </nz-dropdown-menu>
-                </nz-dropdown>
+                <button *ngIf="data.status === 'PENDING'" nz-button nzType="link" nzSize="small" (click)="changeStatus(data, 'ACCEPTED')" style="color: #2E7D6B;">
+                  <i nz-icon nzType="check-circle"></i>接受
+                </button>
+                <button *ngIf="data.status === 'PENDING'" nz-button nzType="link" nzSize="small" nzDanger (click)="changeStatus(data, 'REJECTED')">
+                  <i nz-icon nzType="close-circle"></i>拒绝
+                </button>
+                <button *ngIf="data.status === 'PENDING'" nz-button nzType="link" nzSize="small" (click)="changeStatus(data, 'EXPIRED')" style="color: #8A8F98;">
+                  <i nz-icon nzType="clock-circle"></i>过期
+                </button>
                 <button *ngIf="data.status === 'EXPIRED'" nz-button nzType="link" nzSize="small" (click)="changeStatus(data, 'PENDING')">
                   <i nz-icon nzType="redo"></i>重新激活
                 </button>

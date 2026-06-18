@@ -23,7 +23,8 @@ import { getChannelInfo } from '../../core/mock.repository';
       (nzOnOk)="handleSubmit()"
       (nzOnCancel)="handleCancel()"
       nzWidth="720px"
-      [nzOkButtonStyle]="{ background: '#0F3D3E', borderColor: '#0F3D3E' }"
+      nzOkType="primary"
+      nzClassName="brand-modal"
     >
       <div *ngIf="visible" style="padding: 0 8px;">
         <nz-alert
@@ -74,13 +75,13 @@ import { getChannelInfo } from '../../core/mock.repository';
           <label style="display: block; margin-bottom: 8px; font-weight: 500;">
             催办内容
             <span style="color: rgba(0,0,0,0.45); font-weight: normal;">
-              （可使用变量占位符：
+              （可使用变量占位符，点击插入：
               <span
-                *ngFor="let v of templateVariables; let last = last"
+                *ngFor="let v of templateVariables"
                 class="var-chip"
                 (click)="insertVariable(v.key)"
                 title="点击插入"
-              >{{ v.key }}</span>{{ last ? '' : '、' }}
+              >{{ v.key }}</span>
               ）
             </span>
           </label>
@@ -273,22 +274,29 @@ export class FollowUpModalComponent {
       operator: 'HR'
     };
 
-    const request = this.isBatch
-      ? this.followUpService.batchAddFollowUpRecord(this.offerIds, data)
-      : this.followUpService.addFollowUpRecord({ ...data, offerId: this.offerIds[0] });
+    const onSuccess = () => {
+      this.submitting = false;
+      this.visible = false;
+      this.message.success(this.isBatch ? `批量催办完成，共 ${this.offerIds.length} 人` : '催办记录已添加');
+      this.onSuccess.emit();
+    };
 
-    request.subscribe({
-      next: () => {
-        this.submitting = false;
-        this.visible = false;
-        this.message.success(this.isBatch ? `批量催办完成，共 ${this.offerIds.length} 人` : '催办记录已添加');
-        this.onSuccess.emit();
-      },
-      error: () => {
-        this.submitting = false;
-        this.message.error('提交失败');
-      }
-    });
+    const onError = () => {
+      this.submitting = false;
+      this.message.error('提交失败');
+    };
+
+    if (this.isBatch) {
+      this.followUpService.batchAddFollowUpRecord(this.offerIds, data).subscribe({
+        next: onSuccess,
+        error: onError
+      });
+    } else {
+      this.followUpService.addFollowUpRecord({ ...data, offerId: this.offerIds[0] }).subscribe({
+        next: onSuccess,
+        error: onError
+      });
+    }
   }
 
   getChannelInfo = getChannelInfo;

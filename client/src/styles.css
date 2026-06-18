@@ -1,8 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root {
+  --brand-primary: #0F3D3E;
+  --brand-primary-light: #1a5c5e;
+  --brand-accent: #E0A458;
+  --brand-accent-light: #F5C88A;
+  --brand-bg: #F7F5F1;
+  --brand-success: #2E7D6B;
+  --brand-danger: #B5462F;
+  --brand-muted: #8A8F98;
+}
+
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background-color: #f0f2f5;
+  font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--brand-bg);
+  color: rgba(0, 0, 0, 0.88);
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: 'Noto Serif SC', 'Noto Sans SC', serif;
 }
 
 .page-container {
@@ -99,4 +117,13 @@ body {
   text-align: center;
   padding: 60px 0;
   color: rgba(0, 0, 0, 0.25);
+}
+
+.brand-modal .ant-btn-primary {
+  background: #0F3D3E;
+  border-color: #0F3D3E;
+}
+.brand-modal .ant-btn-primary:hover {
+  background: #1a5c5e;
+  border-color: #1a5c5e;
 }

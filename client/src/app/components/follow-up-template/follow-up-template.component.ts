@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { FollowUpTemplateService } from '../../services/follow-up-template.service';
@@ -117,7 +118,8 @@ import { formatDateTime, getChannelInfo } from '../../core/mock.repository';
         (nzOnOk)="handleEditorSave()"
         (nzOnCancel)="editorVisible = false"
         nzWidth="680px"
-        [nzOkButtonStyle]="{ background: '#0F3D3E', borderColor: '#0F3D3E' }"
+        nzOkType="primary"
+        nzClassName="brand-modal"
       >
         <div *ngIf="editorVisible" style="padding: 0 8px;">
           <div style="margin-bottom: 16px;">
@@ -252,7 +254,7 @@ export class FollowUpTemplateComponent implements OnInit {
     private templateService: FollowUpTemplateService,
     private message: NzMessageService,
     private modalService: NzModalService,
-    public router: any
+    public router: Router
   ) {}
 
   ngOnInit(): void {
@@ -265,7 +267,7 @@ export class FollowUpTemplateComponent implements OnInit {
   }
 
   get channelStats() {
-    const stats = this.channelOptions.map(c => ({
+    const stats = this.channelOptions.map((c: any) => ({
       ...c,
       count: this.templates.filter(t => t.channel === c.value).length
     }));

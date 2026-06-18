@@ -281,7 +281,7 @@ export class MockRepository {
     };
     this.db.records.push(full);
 
-    const offer = this.db.offers.find(o => o.id === record.offerId);
+    const offer = this.db.offers.find((o: OfferFollowUp) => o.id === record['offerId']);
     if (offer) {
       offer.followUpRecords = [...offer.followUpRecords, full];
       offer.updatedAt = new Date().toISOString();
