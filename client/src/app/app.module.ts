@@ -31,6 +31,8 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzTimelineModule } from 'ng-zorro-antd/timeline';
 import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzTabsModule } from 'ng-zorro-antd/tabs';
+import { NzPageHeaderModule } from 'ng-zorro-antd/page-header';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -39,7 +41,9 @@ import { EvaluationListComponent } from './components/evaluation-list/evaluation
 import { EvaluationFormComponent } from './components/evaluation-form/evaluation-form.component';
 import { OfferListComponent } from './components/offer-list/offer-list.component';
 import { OfferDetailComponent } from './components/offer-detail/offer-detail.component';
-import { ConflictListComponent } from './components/conflict-list/conflict-list.component';
+import { ScheduleConflictListComponent } from './components/schedule-conflict-list/schedule-conflict-list.component';
+import { CandidateListComponent } from './components/candidate-list/candidate-list.component';
+import { CandidateDetailComponent } from './components/candidate-detail/candidate-detail.component';
 
 import { IconDefinition } from '@ant-design/icons-angular';
 import {
@@ -72,7 +76,13 @@ import {
   SolutionOutline,
   HistoryOutline,
   ThunderboltOutline,
-  CalendarOutline
+  CalendarOutline,
+  PhoneOutline,
+  VideoCameraOutline,
+  StarOutline,
+  StarFill,
+  ArrowLeftOutline,
+  WarningOutline
 } from '@ant-design/icons-angular/icons';
 
 const icons: IconDefinition[] = [
@@ -105,7 +115,13 @@ const icons: IconDefinition[] = [
   SolutionOutline,
   HistoryOutline,
   ThunderboltOutline,
-  CalendarOutline
+  CalendarOutline,
+  PhoneOutline,
+  VideoCameraOutline,
+  StarOutline,
+  StarFill,
+  ArrowLeftOutline,
+  WarningOutline
 ];
 
 @NgModule({

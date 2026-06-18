@@ -7,6 +7,7 @@ const reminderRoutes = require('./routes/reminderRoutes');
 const evaluationRoutes = require('./routes/evaluationRoutes');
 const offerRoutes = require('./routes/offerRoutes');
 const scheduleConflictRoutes = require('./routes/scheduleConflictRoutes');
+const candidateRoutes = require('./routes/candidateRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,6 +29,7 @@ app.use('/api/reminders', reminderRoutes);
 app.use('/api/evaluations', evaluationRoutes);
 app.use('/api/offers', offerRoutes);
 app.use('/api/schedule-conflicts', scheduleConflictRoutes);
+app.use('/api/candidates', candidateRoutes);
 
 app.use((err, req, res, next) => {
   console.error('服务器错误:', err);
@@ -62,6 +64,7 @@ async function startServer() {
     console.log(`   评价接口: http://localhost:${PORT}/api/evaluations`);
     console.log(`   Offer接口: http://localhost:${PORT}/api/offers`);
     console.log(`   日程冲突接口: http://localhost:${PORT}/api/schedule-conflicts`);
+    console.log(`   候选人接口: http://localhost:${PORT}/api/candidates`);
     console.log('\n📝 使用说明:');
     console.log('   1. 如需初始化测试数据: npm run seed');
     console.log('   2. 如未配置 SMTP，邮件将以模拟方式发送（在控制台输出）');

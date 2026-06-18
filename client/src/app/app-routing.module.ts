@@ -5,18 +5,22 @@ import { EvaluationListComponent } from './components/evaluation-list/evaluation
 import { EvaluationFormComponent } from './components/evaluation-form/evaluation-form.component';
 import { OfferListComponent } from './components/offer-list/offer-list.component';
 import { OfferDetailComponent } from './components/offer-detail/offer-detail.component';
-import { ConflictListComponent } from './components/conflict-list/conflict-list.component';
+import { ScheduleConflictListComponent } from './components/schedule-conflict-list/schedule-conflict-list.component';
+import { CandidateListComponent } from './components/candidate-list/candidate-list.component';
+import { CandidateDetailComponent } from './components/candidate-detail/candidate-detail.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/evaluations', pathMatch: 'full' },
+  { path: '', redirectTo: '/candidates', pathMatch: 'full' },
+  { path: 'candidates', component: CandidateListComponent },
+  { path: 'candidates/:id', component: CandidateDetailComponent },
   { path: 'reminders', component: ReminderListComponent },
-  { path: 'conflicts', component: ConflictListComponent },
   { path: 'evaluations', component: EvaluationListComponent },
   { path: 'evaluations/:interviewId', component: EvaluationFormComponent },
   { path: 'offers', component: OfferListComponent },
   { path: 'offers/new', component: OfferDetailComponent },
   { path: 'offers/:id', component: OfferDetailComponent },
-  { path: 'offers/:id/edit', component: OfferDetailComponent }
+  { path: 'offers/:id/edit', component: OfferDetailComponent },
+  { path: 'schedule-conflicts', component: ScheduleConflictListComponent }
 ];
 
 @NgModule({

@@ -7,6 +7,7 @@ const Reminder = require('../models/Reminder');
 const Evaluation = require('../models/Evaluation');
 const Offer = require('../models/Offer');
 const ScheduleConflict = require('../models/ScheduleConflict');
+const CandidateCommunication = require('../models/CandidateCommunication');
 
 const candidatesData = [
   { name: '张三', email: 'zhangsan@example.com', phone: '13800138001', position: '前端工程师', department: '技术部' },
@@ -52,6 +53,7 @@ async function seed() {
   await Evaluation.deleteMany({});
   await Offer.deleteMany({});
   await ScheduleConflict.deleteMany({});
+  await CandidateCommunication.deleteMany({});
 
   const candidates = await Candidate.create(candidatesData);
   const interviewers = await Interviewer.create(interviewersData);
@@ -91,6 +93,75 @@ async function seed() {
       });
     }
   });
+
+  const overlapBaseTime = new Date();
+  overlapBaseTime.setDate(overlapBaseTime.getDate() + 2);
+  overlapBaseTime.setHours(14, 0, 0, 0);
+
+  const overlapInterviewsData = [
+    {
+      candidateId: candidates[0]._id,
+      candidate: candidates[0].toObject(),
+      interviewerId: interviewers[0]._id,
+      interviewer: interviewers[0].toObject(),
+      interviewTime: new Date(overlapBaseTime),
+      interviewType: 'onsite',
+      round: 2,
+      status: 'pending',
+      evaluationDeadline: new Date(overlapBaseTime.getTime() + 2 * 24 * 60 * 60 * 1000),
+      evaluationStatus: 'pending'
+    },
+    {
+      candidateId: candidates[5]._id,
+      candidate: candidates[5].toObject(),
+      interviewerId: interviewers[0]._id,
+      interviewer: interviewers[0].toObject(),
+      interviewTime: new Date(overlapBaseTime.getTime() + 30 * 60 * 1000),
+      interviewType: 'video',
+      round: 1,
+      status: 'pending',
+      evaluationDeadline: new Date(overlapBaseTime.getTime() + 2 * 24 * 60 * 60 * 1000),
+      evaluationStatus: 'pending'
+    },
+    {
+      candidateId: candidates[2]._id,
+      candidate: candidates[2].toObject(),
+      interviewerId: interviewers[1]._id,
+      interviewer: interviewers[1].toObject(),
+      interviewTime: new Date(overlapBaseTime),
+      interviewType: 'onsite',
+      round: 2,
+      status: 'pending',
+      evaluationDeadline: new Date(overlapBaseTime.getTime() + 2 * 24 * 60 * 60 * 1000),
+      evaluationStatus: 'pending'
+    },
+    {
+      candidateId: candidates[6]._id,
+      candidate: candidates[6].toObject(),
+      interviewerId: interviewers[1]._id,
+      interviewer: interviewers[1].toObject(),
+      interviewTime: new Date(overlapBaseTime.getTime() + 20 * 60 * 1000),
+      interviewType: 'phone',
+      round: 1,
+      status: 'pending',
+      evaluationDeadline: new Date(overlapBaseTime.getTime() + 2 * 24 * 60 * 60 * 1000),
+      evaluationStatus: 'pending'
+    },
+    {
+      candidateId: candidates[4]._id,
+      candidate: candidates[4].toObject(),
+      interviewerId: interviewers[1]._id,
+      interviewer: interviewers[1].toObject(),
+      interviewTime: new Date(overlapBaseTime.getTime() + 40 * 60 * 1000),
+      interviewType: 'video',
+      round: 1,
+      status: 'pending',
+      evaluationDeadline: new Date(overlapBaseTime.getTime() + 2 * 24 * 60 * 60 * 1000),
+      evaluationStatus: 'pending'
+    }
+  ];
+
+  interviewsData.push(...overlapInterviewsData);
 
   const interviews = await Interview.create(interviewsData);
   console.log(`✅ 已创建 ${interviews.length} 条面试记录`);
@@ -575,6 +646,71 @@ async function seed() {
   const scheduleConflicts = await ScheduleConflict.create(scheduleConflictsData);
   console.log(`✅ 已创建 ${scheduleConflicts.length} 条日程冲突数据（覆盖待处理/沟通中/已解决 各状态）`);
 
+  console.log('\n📦 初始化候选人沟通记录测试数据...');
+
+  const candidateCommunicationsData = [];
+
+  candidates.forEach((candidate, idx) => {
+    const commCount = idx % 4 + 2;
+    for (let i = 0; i < commCount; i++) {
+      const types = ['email', 'phone', 'note', 'video'];
+      const directions = ['outbound', 'inbound', 'internal'];
+      const type = types[(idx + i) % types.length];
+      const direction = directions[(idx + i) % directions.length];
+
+      let title, content, result, nextStep, operator, operatorRole;
+
+      if (type === 'email') {
+        title = `发送面试邀请邮件`;
+        content = `已向 ${candidate.name} 发送第 ${i + 1} 轮面试邀请，包含面试时间、地点、面试官信息及注意事项。候选人已收到邮件并确认。`;
+        result = '候选人已确认参加';
+        nextStep = '等待面试';
+        operator = 'HR-小李';
+        operatorRole = 'hr';
+      } else if (type === 'phone') {
+        title = `电话沟通面试安排`;
+        content = `与 ${candidate.name} 电话沟通，确认其目前在职状态、离职周期、薪资预期等基本信息。候选人表示对岗位很感兴趣，能在1个月内到岗。`;
+        result = '沟通顺畅，候选人意向强烈';
+        nextStep = '安排技术面试';
+        operator = idx % 2 === 0 ? 'HR-小李' : 'HR-小王';
+        operatorRole = 'hr';
+      } else if (type === 'note') {
+        title = `面试官评价反馈记录`;
+        content = `面试官陈技术反馈：${candidate.name} 技术基础扎实，沟通表达清晰，对前端工程化有较深入的理解。但在复杂系统设计方面经验稍显不足，建议作为重点培养对象。`;
+        result = '面试官推荐录用';
+        nextStep = '进入下一轮面试 / HR谈薪';
+        operator = idx % 2 === 0 ? '陈技术' : '刘产品';
+        operatorRole = 'interviewer';
+      } else {
+        title = `视频面试 - 第 ${i + 1} 轮`;
+        content = `通过视频会议完成第 ${i + 1} 轮面试。面试时长约45分钟，主要考察专业技能、项目经验及综合素质。候选人表现良好，回答问题有条理。`;
+        result = '面试通过';
+        nextStep = '安排终面';
+        operator = idx % 2 === 0 ? '陈技术' : '林架构';
+        operatorRole = 'interviewer';
+      }
+
+      candidateCommunicationsData.push({
+        candidateId: candidate._id,
+        type,
+        direction,
+        title: i === 0 ? '初步沟通：简历筛选通过' : title,
+        content,
+        contactPerson: candidate.name,
+        contactInfo: candidate.phone,
+        result,
+        nextStep,
+        operator,
+        operatorRole,
+        isImportant: i === 0 || type === 'note',
+        createdAt: new Date(Date.now() - (i + 1) * (idx + 1) * 24 * 60 * 60 * 1000)
+      });
+    }
+  });
+
+  const candidateCommunications = await CandidateCommunication.create(candidateCommunicationsData);
+  console.log(`✅ 已创建 ${candidateCommunications.length} 条候选人沟通记录（HR和面试官角色均有覆盖）`);
+
   console.log('\n🎉 测试数据初始化完成！');
   console.log('\n📊 数据统计:');
   console.log(`   候选人: ${candidates.length}`);
@@ -586,6 +722,7 @@ async function seed() {
   console.log(`   已提交评价: ${submittedInterviews.length}`);
   console.log(`   草稿中: ${draftInterviews.length}`);
   console.log(`   日程冲突: ${scheduleConflicts.length}`);
+  console.log(`   候选人沟通记录: ${candidateCommunications.length}`);
 
   process.exit(0);
 }

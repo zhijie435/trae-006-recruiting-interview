@@ -270,7 +270,127 @@ function buildConflictEmailContent(target, conflict, note) {
   `;
 }
 
+function formatDateTime(date) {
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
+}
+
+async function sendConflictReminderEmail(conflict, note) {
+  const interviewer = conflict.interviewer;
+  const mailOptions = {
+    from: process.env.SMTP_FROM || '招聘管理系统 <noreply@example.com>',
+    to: interviewer.email,
+    subject: `【日程冲突】您的面试安排存在时间重叠，请尽快协调`,
+    html: buildConflictReminderEmailContent(conflict, note)
+  };
+
+  const smtpTransporter = createTransporter();
+
+  if (!smtpTransporter) {
+    console.log(`
+==================== 模拟邮件发送 ====================
+收件人: ${interviewer.name} <${interviewer.email}>
+主题: ${mailOptions.subject}
+----------------------------------------------------
+${mailOptions.html.replace(/<[^>]*>/g, '')}
+====================================================
+    `);
+    return { success: true, mock: true };
+  }
+
+  try {
+    const info = await smtpTransporter.sendMail(mailOptions);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('邮件发送失败:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+function buildConflictReminderEmailContent(conflict, note) {
+  const interviewTypeMap = {
+    phone: '电话面试',
+    video: '视频面试',
+    onsite: '现场面试',
+    final: '终面'
+  };
+
+  const interviewsList = (conflict.interviews || []).map((it, idx) => {
+    return `
+      <tr>
+        <td style="padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: rgba(0,0,0,0.88);">${idx + 1}</td>
+        <td style="padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: rgba(0,0,0,0.88); font-weight: 500;">${it.candidate.name}</td>
+        <td style="padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: rgba(0,0,0,0.88);">${it.candidate.position}</td>
+        <td style="padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: rgba(0,0,0,0.88);">${interviewTypeMap[it.interviewType] || it.interviewType} 第${it.round}轮</td>
+        <td style="padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: #d46b08; font-weight: 500;">${formatDateTime(it.interviewTime)}</td>
+      </tr>
+    `;
+  }).join('');
+
+  return `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background: linear-gradient(135deg, #fa8c16 0%, #d46b08 100%); padding: 24px; color: white; border-radius: 8px 8px 0 0;">
+        <h2 style="margin: 0; font-size: 20px;">面试日程冲突提醒</h2>
+      </div>
+      <div style="background: #fff; padding: 24px; border: 1px solid #f0f0f0; border-top: none; border-radius: 0 0 8px 8px;">
+        <p style="margin: 0 0 16px; font-size: 16px; color: rgba(0,0,0,0.88);">
+          您好，<strong>${conflict.interviewer.name}</strong>：
+        </p>
+        <div style="background: #fff7e6; border: 1px solid #ffd591; border-radius: 6px; padding: 16px; margin-bottom: 20px;">
+          <p style="margin: 0; font-size: 15px; color: #d46b08; font-weight: 500;">
+            ⚠️ 系统检测到您在 <strong>${formatDateTime(conflict.conflictTime)}</strong> 前后有 ${conflict.interviews.length} 场面试时间重叠，请尽快与HR协调处理
+          </p>
+        </div>
+        <p style="margin: 0 0 12px; font-size: 14px; color: rgba(0,0,0,0.88);">
+          以下是存在时间冲突的面试安排：
+        </p>
+        <table style="width: 100%; border-collapse: collapse; margin: 16px 0 24px; background: #fafafa; border-radius: 6px; overflow: hidden;">
+          <thead>
+            <tr style="background: #f5f5f5;">
+              <th style="padding: 12px 16px; text-align: left; font-size: 13px; color: rgba(0,0,0,0.45); font-weight: 500;">序号</th>
+              <th style="padding: 12px 16px; text-align: left; font-size: 13px; color: rgba(0,0,0,0.45); font-weight: 500;">候选人</th>
+              <th style="padding: 12px 16px; text-align: left; font-size: 13px; color: rgba(0,0,0,0.45); font-weight: 500;">岗位</th>
+              <th style="padding: 12px 16px; text-align: left; font-size: 13px; color: rgba(0,0,0,0.45); font-weight: 500;">面试类型</th>
+              <th style="padding: 12px 16px; text-align: left; font-size: 13px; color: rgba(0,0,0,0.45); font-weight: 500;">面试时间</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${interviewsList}
+          </tbody>
+        </table>
+        ${note ? `
+          <div style="background: #f0f5ff; border: 1px solid #adc6ff; border-radius: 6px; padding: 16px; margin-bottom: 20px;">
+            <div style="font-size: 13px; color: rgba(0,0,0,0.45); margin-bottom: 4px;">HR备注</div>
+            <div style="font-size: 14px; color: #1d39c4;">${note}</div>
+          </div>
+        ` : ''}
+        <div style="background: #fafafa; padding: 16px; border-radius: 6px; margin-bottom: 20px;">
+          <p style="margin: 0 0 8px; font-size: 14px; color: rgba(0,0,0,0.88); font-weight: 500;">📋 请您配合以下操作：</p>
+          <ol style="margin: 0; padding-left: 20px; font-size: 14px; color: rgba(0,0,0,0.65); line-height: 1.8;">
+            <li>查看上方冲突面试列表，确认您可参加的时间段</li>
+            <li>请在收到邮件后尽快回复HR，告知您方便的备选时间</li>
+            <li>如需协调其他面试官代替，请直接联系HR对接人</li>
+          </ol>
+        </div>
+        <p style="margin: 0; font-size: 13px; color: rgba(0,0,0,0.45); line-height: 1.6;">
+          此邮件由系统自动发送，请勿直接回复。如有问题请联系HR。<br />
+          感谢您的配合，及时协调有助于顺利推进招聘流程。
+        </p>
+      </div>
+      <div style="text-align: center; padding: 16px; font-size: 12px; color: rgba(0,0,0,0.25);">
+        © 2026 招聘面试管理系统
+      </div>
+    </div>
+  `;
+}
+
 module.exports = {
   sendEvaluationReminderEmail,
-  sendScheduleConflictEmail
+  sendScheduleConflictEmail,
+  sendConflictReminderEmail
 };
