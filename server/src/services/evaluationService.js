@@ -30,14 +30,6 @@ async function getInterviewerPendingList(interviewerId, query = {}) {
 
   matchStage.status = 'completed';
 
-  if (status === 'pending') {
-    matchStage.evaluationStatus = { $in: ['pending', 'overdue'] };
-  } else if (status === 'submitted') {
-    matchStage.evaluationStatus = 'submitted';
-  } else {
-    matchStage.evaluationStatus = { $in: ['pending', 'overdue', 'submitted'] };
-  }
-
   if (keyword) {
     matchStage.$or = [
       { 'candidate.name': { $regex: keyword, $options: 'i' } },
@@ -47,7 +39,6 @@ async function getInterviewerPendingList(interviewerId, query = {}) {
 
   const pipeline = [
     { $match: matchStage },
-    { $sort: { evaluationDeadline: 1 } },
     {
       $lookup: {
         from: 'evaluations',
@@ -61,8 +52,49 @@ async function getInterviewerPendingList(interviewerId, query = {}) {
         evaluationData: { $arrayElemAt: ['$evaluation', 0] }
       }
     },
+    {
+      $addFields: {
+        computedStatus: {
+          $cond: {
+            if: { $gt: [{ $size: '$evaluation' }, 0] },
+            then: {
+              $cond: {
+                if: { $eq: ['$evaluationData.status', 'submitted'] },
+                then: 'submitted',
+                else: 'draft'
+              }
+            },
+            else: {
+              $cond: {
+                if: { $and: [{ $lt: ['$evaluationDeadline', new Date()] }, { $eq: ['$evaluationStatus', 'pending'] }] },
+                then: 'overdue',
+                else: '$evaluationStatus'
+              }
+            }
+          }
+        }
+      }
+    },
     { $project: { evaluation: 0 } }
   ];
+
+  if (status && status !== '') {
+    if (status === 'pending') {
+      pipeline.push({
+        $match: { computedStatus: { $in: ['pending', 'overdue'] } }
+      });
+    } else if (status === 'draft') {
+      pipeline.push({
+        $match: { computedStatus: 'draft' }
+      });
+    } else if (status === 'submitted') {
+      pipeline.push({
+        $match: { computedStatus: 'submitted' }
+      });
+    }
+  }
+
+  pipeline.push({ $sort: { evaluationDeadline: 1 } });
 
   const countPipeline = [...pipeline, { $count: 'total' }];
   const countResult = await Interview.aggregate(countPipeline);
@@ -76,13 +108,7 @@ async function getInterviewerPendingList(interviewerId, query = {}) {
   const now = new Date();
   const list = interviews.map(interview => {
     const deadline = new Date(interview.evaluationDeadline);
-    let evalStatus = interview.evaluationStatus;
-    if (deadline < now && interview.evaluationStatus === 'pending') {
-      evalStatus = 'overdue';
-    }
-    if (interview.evaluationData) {
-      evalStatus = interview.evaluationData.status === 'submitted' ? 'submitted' : 'draft';
-    }
+    const evalStatus = interview.computedStatus;
 
     const overdueDays = deadline < now
       ? Math.floor((now.getTime() - deadline.getTime()) / (1000 * 60 * 60 * 24))
@@ -270,39 +296,91 @@ async function getInterviewerStatistics(interviewerId) {
   startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
   startOfWeek.setHours(0, 0, 0, 0);
 
-  const baseQuery = interviewerId
-    ? { interviewerId: new mongoose.Types.ObjectId(interviewerId) }
-    : {};
+  const baseMatch = {};
 
-  const pendingQuery = {
-    ...baseQuery,
-    status: 'completed',
-    evaluationStatus: { $in: ['pending', 'overdue'] }
-  };
+  if (interviewerId) {
+    baseMatch.interviewerId = new mongoose.Types.ObjectId(interviewerId);
+  }
 
-  const overdueQuery = {
-    ...pendingQuery,
-    evaluationDeadline: { $lt: now }
-  };
+  baseMatch.status = 'completed';
 
-  const totalPending = await Interview.countDocuments(pendingQuery);
-  const overdueCount = await Interview.countDocuments(overdueQuery);
+  const pipeline = [
+    { $match: baseMatch },
+    {
+      $lookup: {
+        from: 'evaluations',
+        localField: '_id',
+        foreignField: 'interviewId',
+        as: 'evaluation'
+      }
+    },
+    {
+      $addFields: {
+        evaluationData: { $arrayElemAt: ['$evaluation', 0] }
+      }
+    },
+    {
+      $addFields: {
+        computedStatus: {
+          $cond: {
+            if: { $gt: [{ $size: '$evaluation' }, 0] },
+            then: {
+              $cond: {
+                if: { $eq: ['$evaluationData.status', 'submitted'] },
+                then: 'submitted',
+                else: 'draft'
+              }
+            },
+            else: {
+              $cond: {
+                if: { $and: [{ $lt: ['$evaluationDeadline', now] }, { $eq: ['$evaluationStatus', 'pending'] }] },
+                then: 'overdue',
+                else: '$evaluationStatus'
+              }
+            }
+          }
+        }
+      }
+    }
+  ];
 
-  const submittedQuery = interviewerId
-    ? { interviewerId: new mongoose.Types.ObjectId(interviewerId), status: 'submitted' }
-    : { status: 'submitted' };
+  const statsPipeline = [
+    ...pipeline,
+    {
+      $group: {
+        _id: '$computedStatus',
+        count: { $sum: 1 }
+      }
+    }
+  ];
+
+  const statsResults = await Interview.aggregate(statsPipeline);
+
+  const statusCounts = {};
+  statsResults.forEach(item => {
+    statusCounts[item._id] = item.count;
+  });
+
+  const totalPending = (statusCounts.pending || 0) + (statusCounts.overdue || 0);
+  const overdueCount = statusCounts.overdue || 0;
+
+  const submittedBaseQuery = {};
+  if (interviewerId) {
+    submittedBaseQuery.interviewerId = new mongoose.Types.ObjectId(interviewerId);
+  }
+  submittedBaseQuery.status = 'submitted';
 
   const todaySubmitted = await Evaluation.countDocuments({
-    ...submittedQuery,
+    ...submittedBaseQuery,
     submittedAt: { $gte: startOfToday }
   });
 
   const weekSubmitted = await Evaluation.countDocuments({
-    ...submittedQuery,
+    ...submittedBaseQuery,
     submittedAt: { $gte: startOfWeek }
   });
 
-  const totalSubmitted = await Evaluation.countDocuments(submittedQuery);
+  const totalSubmitted = statusCounts.submitted || 0;
 
   return {
     totalPending,

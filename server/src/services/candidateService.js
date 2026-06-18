@@ -178,7 +178,7 @@ async function addCommunication(candidateId, data) {
 async function getCommunications(candidateId, query = {}) {
   const { type, operatorRole, page = 1, pageSize = 20 } = query;
 
-  const matchStage: any = { candidateId };
+  const matchStage = { candidateId };
   if (type) matchStage.type = type;
   if (operatorRole) matchStage.operatorRole = operatorRole;
 
@@ -255,12 +255,12 @@ async function getCandidateStatistics(candidateId) {
   const communications = await CandidateCommunication.find({ candidateId });
   const evaluations = await Evaluation.find({ candidateId });
 
-  const interviewTypeCount: Record<string, number> = {};
+  const interviewTypeCount = {};
   interviews.forEach(i => {
     interviewTypeCount[i.interviewType] = (interviewTypeCount[i.interviewType] || 0) + 1;
   });
 
-  const communicationTypeCount: Record<string, number> = {};
+  const communicationTypeCount = {};
   communications.forEach(c => {
     communicationTypeCount[c.type] = (communicationTypeCount[c.type] || 0) + 1;
   });
