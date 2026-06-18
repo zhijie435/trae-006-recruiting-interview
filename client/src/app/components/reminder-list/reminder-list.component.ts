@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { ReminderService } from '../../services/reminder.service';
 import { Reminder, ReminderQueryParams, Statistics } from '../../models/reminder.model';
 import { NzMessageService } from 'ng-zorro-antd/message';
@@ -130,7 +131,7 @@ import { NzModalService } from 'ng-zorro-antd/modal';
               <th>评价截止日期</th>
               <th>状态</th>
               <th>催办次数</th>
-              <th nzWidth="180px">操作</th>
+              <th nzWidth="220px">操作</th>
             </tr>
           </thead>
           <tbody>
@@ -170,13 +171,17 @@ import { NzModalService } from 'ng-zorro-antd/modal';
               </td>
               <td>{{ data.reminderCount || 0 }}</td>
               <td>
+                <button nz-button nzType="link" nzType="primary" (click)="goToEvaluation(data)">
+                  <i nz-icon nzType="edit"></i>
+                  去评价
+                </button>
                 <button nz-button nzType="link" (click)="viewHistory(data)">
                   <i nz-icon nzType="eye"></i>
                   催办记录
                 </button>
                 <button nz-button nzType="link" nzDanger (click)="sendSingleReminder(data)">
                   <i nz-icon nzType="send"></i>
-                  发送催办
+                  催办
                 </button>
               </td>
             </tr>
@@ -214,7 +219,8 @@ export class ReminderListComponent implements OnInit {
   constructor(
     private reminderService: ReminderService,
     private message: NzMessageService,
-    private modal: NzModalService
+    private modal: NzModalService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -409,5 +415,9 @@ export class ReminderListComponent implements OnInit {
     const dead = new Date(deadline);
     const diff = now.getTime() - dead.getTime();
     return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
+  }
+
+  goToEvaluation(data: Reminder): void {
+    this.router.navigate(['/evaluations', data.interviewId]);
   }
 }

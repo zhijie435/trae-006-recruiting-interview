@@ -11,6 +11,7 @@ import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzTagModule } from 'ng-zorro-antd/tag';
@@ -24,10 +25,16 @@ import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzAvatarModule } from 'ng-zorro-antd/avatar';
+import { NzRateModule } from 'ng-zorro-antd/rate';
+import { NzRadioModule } from 'ng-zorro-antd/radio';
+import { NzDividerModule } from 'ng-zorro-antd/divider';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ReminderListComponent } from './components/reminder-list/reminder-list.component';
+import { EvaluationListComponent } from './components/evaluation-list/evaluation-list.component';
+import { EvaluationFormComponent } from './components/evaluation-form/evaluation-form.component';
 
 import { IconDefinition } from '@ant-design/icons-angular';
 import {
@@ -43,7 +50,13 @@ import {
   SendOutline,
   DeleteOutline,
   EyeOutline,
-  HomeOutline
+  HomeOutline,
+  EditOutline,
+  SaveOutline,
+  BarChartOutline,
+  MessageOutline,
+  FileTextOutline,
+  AuditOutline
 } from '@ant-design/icons-angular/icons';
 
 const icons: IconDefinition[] = [
@@ -59,13 +72,21 @@ const icons: IconDefinition[] = [
   SendOutline,
   DeleteOutline,
   EyeOutline,
-  HomeOutline
+  HomeOutline,
+  EditOutline,
+  SaveOutline,
+  BarChartOutline,
+  MessageOutline,
+  FileTextOutline,
+  AuditOutline
 ];
 
 @NgModule({
   declarations: [
     AppComponent,
-    ReminderListComponent
+    ReminderListComponent,
+    EvaluationListComponent,
+    EvaluationFormComponent
   ],
   imports: [
     BrowserModule,
@@ -81,6 +102,7 @@ const icons: IconDefinition[] = [
     NzTableModule,
     NzButtonModule,
     NzInputModule,
+    NzInputNumberModule,
     NzSelectModule,
     NzDatePickerModule,
     NzTagModule,
@@ -93,6 +115,10 @@ const icons: IconDefinition[] = [
     NzSpinModule,
     NzToolTipModule,
     NzCheckboxModule,
+    NzAvatarModule,
+    NzRateModule,
+    NzRadioModule,
+    NzDividerModule,
     NzIconModule.forRoot(icons)
   ],
   providers: [],

@@ -4,6 +4,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 
 const reminderRoutes = require('./routes/reminderRoutes');
+const evaluationRoutes = require('./routes/evaluationRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,6 +23,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/reminders', reminderRoutes);
+app.use('/api/evaluations', evaluationRoutes);
 
 app.use((err, req, res, next) => {
   console.error('服务器错误:', err);
@@ -53,6 +55,7 @@ async function startServer() {
     console.log(`   服务地址: http://localhost:${PORT}`);
     console.log(`   API 健康检查: http://localhost:${PORT}/api/health`);
     console.log(`   催办接口: http://localhost:${PORT}/api/reminders`);
+    console.log(`   评价接口: http://localhost:${PORT}/api/evaluations`);
     console.log('\n📝 使用说明:');
     console.log('   1. 如需初始化测试数据: npm run seed');
     console.log('   2. 如未配置 SMTP，邮件将以模拟方式发送（在控制台输出）');

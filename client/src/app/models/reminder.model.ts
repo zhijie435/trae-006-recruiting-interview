@@ -64,3 +64,71 @@ export interface Statistics {
   todayReminderCount: number;
   thisWeekReminderCount: number;
 }
+
+export interface ScoreDimension {
+  code: string;
+  name: string;
+  score: number;
+  comment?: string;
+}
+
+export type RecommendationType = 'strong_hire' | 'hire' | 'borderline' | 'no_hire' | 'pending';
+
+export interface Evaluation {
+  id?: string;
+  interviewId: string;
+  interviewerId: string;
+  candidateId: string;
+  overallScore?: number;
+  recommendation: RecommendationType;
+  dimensions: ScoreDimension[];
+  strengths: string;
+  weaknesses: string;
+  summary: string;
+  additionalNotes?: string;
+  status: 'draft' | 'submitted';
+  submittedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  isNew?: boolean;
+}
+
+export interface EvaluationDetailResponse {
+  evaluation: Evaluation;
+  interview: Interview;
+  dimensionsMeta: Array<{ code: string; name: string }>;
+  recommendationOptions: Array<{ value: RecommendationType; label: string }>;
+}
+
+export interface PendingEvaluationItem {
+  id: string;
+  candidate: Candidate;
+  interviewer: Interviewer;
+  interviewTime: string;
+  interviewType: 'phone' | 'onsite' | 'video' | 'final';
+  round: number;
+  evaluationDeadline: string;
+  evaluationStatus: 'pending' | 'overdue' | 'draft' | 'submitted';
+  overdueDays: number;
+  hasEvaluation: boolean;
+  evaluationStatusText?: string;
+  overallScore?: number;
+  recommendation?: RecommendationType;
+  recommendationText?: string;
+}
+
+export interface PendingEvaluationQueryParams {
+  keyword?: string;
+  status?: string;
+  interviewerId?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface EvaluationStatistics {
+  totalPending: number;
+  overdueCount: number;
+  todaySubmitted: number;
+  weekSubmitted: number;
+  totalSubmitted: number;
+}

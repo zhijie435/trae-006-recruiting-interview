@@ -4,6 +4,7 @@ const Candidate = require('../models/Candidate');
 const Interviewer = require('../models/Interviewer');
 const Interview = require('../models/Interview');
 const Reminder = require('../models/Reminder');
+const Evaluation = require('../models/Evaluation');
 
 const candidatesData = [
   { name: '张三', email: 'zhangsan@example.com', phone: '13800138001', position: '前端工程师', department: '技术部' },
@@ -46,6 +47,7 @@ async function seed() {
   await Interviewer.deleteMany({});
   await Interview.deleteMany({});
   await Reminder.deleteMany({});
+  await Evaluation.deleteMany({});
 
   const candidates = await Candidate.create(candidatesData);
   const interviewers = await Interviewer.create(interviewersData);
@@ -109,6 +111,72 @@ async function seed() {
   await Promise.all(reminderPromises);
   console.log(`✅ 已创建 ${reminderPromises.length} 条催办记录`);
 
+  const defaultDimensions = [
+    { code: 'technical_skill', name: '专业技能', score: 8, comment: '技术功底扎实，能够深入分析问题' },
+    { code: 'problem_solving', name: '问题解决能力', score: 7, comment: '' },
+    { code: 'communication', name: '沟通表达', score: 8, comment: '' },
+    { code: 'teamwork', name: '团队协作', score: 7, comment: '' },
+    { code: 'learning_ability', name: '学习能力', score: 8, comment: '' },
+    { code: 'cultural_fit', name: '文化匹配', score: 7, comment: '' }
+  ];
+
+  const evaluationPromises = [];
+  const submittedInterviews = interviews.filter(i => i.evaluationStatus !== 'submitted').slice(-3);
+  const draftInterviews = interviews.filter(i => i.evaluationStatus !== 'submitted').slice(-6, -3);
+
+  submittedInterviews.forEach((interview, idx) => {
+    const dims = defaultDimensions.map(d => ({
+      ...d,
+      score: 6 + idx + Math.floor(Math.random() * 2)
+    }));
+    const scores = dims.map(d => d.score);
+    const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length * 10) / 10;
+    evaluationPromises.push(Evaluation.create({
+      interviewId: interview._id,
+      interviewerId: interview.interviewerId,
+      candidateId: interview.candidateId,
+      dimensions: dims,
+      overallScore: avg,
+      recommendation: idx === 0 ? 'strong_hire' : (idx === 1 ? 'hire' : 'borderline'),
+      strengths: '候选人具备扎实的专业基础，沟通表达清晰，逻辑思维能力较强。学习能力好，能够快速掌握新的知识和技能。团队合作意识强，能够主动承担责任。',
+      weaknesses: '在某些复杂场景下的经验还有待积累，架构设计方面可以进一步提升。',
+      summary: `综合来看，${interview.candidate.name}具备良好的专业能力和职业素养，技术功底扎实，学习能力强，沟通表达清晰。虽然在部分高阶能力上还有提升空间，但整体表现优秀，符合岗位要求。`,
+      additionalNotes: '',
+      status: 'submitted',
+      submittedAt: new Date(),
+      createdBy: 'interviewer',
+      updatedBy: 'interviewer'
+    }));
+    interview.evaluationStatus = 'submitted';
+  });
+
+  await Promise.all(submittedInterviews.map(i => i.save()));
+
+  draftInterviews.forEach((interview, idx) => {
+    const dims = defaultDimensions.map(d => ({
+      ...d,
+      score: 5 + Math.floor(Math.random() * 4),
+      comment: idx === 0 ? d.comment : ''
+    }));
+    evaluationPromises.push(Evaluation.create({
+      interviewId: interview._id,
+      interviewerId: interview.interviewerId,
+      candidateId: interview.candidateId,
+      dimensions: dims,
+      recommendation: 'pending',
+      strengths: idx === 0 ? '技术能力较强，有相关项目经验。' : '',
+      weaknesses: '',
+      summary: idx === 0 ? '整体表现尚可，待进一步综合评定。' : '',
+      additionalNotes: '',
+      status: 'draft',
+      createdBy: 'interviewer',
+      updatedBy: 'interviewer'
+    }));
+  });
+
+  const createdEvaluations = await Promise.all(evaluationPromises);
+  console.log(`✅ 已创建 ${createdEvaluations.length} 条评价数据（${submittedInterviews.length}条已提交/${draftInterviews.length}条草稿）`);
+
   console.log('\n🎉 测试数据初始化完成！');
   console.log('\n📊 数据统计:');
   console.log(`   候选人: ${candidates.length}`);
@@ -117,6 +185,8 @@ async function seed() {
   console.log(`   催办记录: ${reminderPromises.length}`);
   console.log(`   已逾期: ${interviews.filter(i => i.evaluationStatus === 'overdue').length}`);
   console.log(`   待评价: ${interviews.filter(i => i.evaluationStatus === 'pending').length}`);
+  console.log(`   已提交评价: ${submittedInterviews.length}`);
+  console.log(`   草稿中: ${draftInterviews.length}`);
 
   process.exit(0);
 }
