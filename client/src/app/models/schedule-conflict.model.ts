@@ -80,3 +80,10 @@ export interface ConflictOption {
   label: string;
   color?: string;
 }
+
+export interface PaginatedResult<T> {
+  list: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+}

@@ -13,7 +13,7 @@ import { ScheduleConflictService } from './services/schedule-conflict.service';
             <i nz-icon nzType="team" style="margin-right: 8px;"></i>
             招聘面试管理系统
           </div>
-          <ul nz-menu nzTheme="dark" nzMode="horizontal" style="flex: 1; border: 0;" [nzSelectedKeys]="selectedMenu">
+          <ul nz-menu nzTheme="dark" nzMode="horizontal" style="flex: 1; border: 0;">
             <li nz-menu-item (click)="router.navigate(['/candidates'])" nzValue="candidates">
               <i nz-icon nzType="user" style="margin-right: 8px;"></i>
               候选人管理

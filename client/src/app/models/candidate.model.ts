@@ -114,3 +114,10 @@ export const OPERATOR_ROLE_OPTIONS = [
   { value: 'interviewer', label: '面试官', color: 'purple' },
   { value: 'admin', label: '管理员', color: 'red' }
 ];
+
+export interface PaginatedResult<T> {
+  list: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+}

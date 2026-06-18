@@ -31,7 +31,7 @@ import { NzModalService } from 'ng-zorro-antd/modal';
           <button
             *ngIf="selectedPendingApprovalCount > 0"
             nz-button
-            nzType="warning"
+            nzType="default"
             (click)="batchRemind()"
             style="margin-right: 8px;"
           >
@@ -264,7 +264,7 @@ import { NzModalService } from 'ng-zorro-antd/modal';
               [(ngModel)]="remindNote"
               placeholder="请输入催办备注，将显示在催办邮件中..."
               rows="3"
-              [nzMaxLength]="200"
+              maxlength="200"
               style="resize: none;"
             ></textarea>
             <div style="text-align: right; color: rgba(0,0,0,0.45); font-size: 12px; margin-top: 4px;">
@@ -506,7 +506,7 @@ export class OfferListComponent implements OnInit {
 
     this.remindLoading = true;
     this.offerService.sendApprovalReminder(this.currentRemindOffer.id, this.remindNote).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         this.remindLoading = false;
         this.remindModalVisible = false;
         this.message.success(res.message || '催办通知已发送');

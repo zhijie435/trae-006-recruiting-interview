@@ -94,7 +94,7 @@ const RECOMMENDATION_MAP: Record<string, string> = {
         </nz-col>
         <nz-col [nzSpan]="6">
           <div class="stat-card">
-            <div class="stat-value" style="color: #fa8c16;">{{ statistics?.avgScore ? statistics.avgScore.toFixed(1) : '-' }}</div>
+            <div class="stat-value" style="color: #fa8c16;">{{ statistics?.avgScore?.toFixed(1) || '-' }}</div>
             <div class="stat-label">平均评分</div>
           </div>
         </nz-col>
@@ -168,14 +168,14 @@ const RECOMMENDATION_MAP: Record<string, string> = {
                   </td>
                   <td>
                     <ng-container *ngIf="interview.evaluations?.length; else noScore">
-                      <span style="font-weight: 600; color: #1890ff;">{{ interview.evaluations[0].overallScore?.toFixed(1) || '-' }}</span>
+                      <span style="font-weight: 600; color: #1890ff;">{{ interview.evaluations?.[0]?.overallScore?.toFixed(1) || '-' }}</span>
                     </ng-container>
                     <ng-template #noScore><span style="color: rgba(0,0,0,0.25);">-</span></ng-template>
                   </td>
                   <td>
                     <ng-container *ngIf="interview.evaluations?.length; else noEval">
-                      <span [ngClass]="getRecommendationClass(interview.evaluations[0].recommendation || '')">
-                        {{ getRecommendationLabel(interview.evaluations[0].recommendation || '') }}
+                      <span [ngClass]="getRecommendationClass(interview.evaluations?.[0]?.recommendation || '')">
+                        {{ getRecommendationLabel(interview.evaluations?.[0]?.recommendation || '') }}
                       </span>
                     </ng-container>
                     <ng-template #noEval><span style="color: rgba(0,0,0,0.25);">-</span></ng-template>
@@ -185,7 +185,7 @@ const RECOMMENDATION_MAP: Record<string, string> = {
             </nz-table>
           </nz-tab>
 
-          <nz-tab nzTitle="Offer 记录" *ngIf="candidate.offers?.length > 0">
+          <nz-tab nzTitle="Offer 记录" *ngIf="candidate?.offers?.length">
             <nz-table
               #offerTable
               [nzData]="candidate.offers"

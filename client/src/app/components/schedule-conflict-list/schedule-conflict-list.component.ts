@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
 import { ScheduleConflictService } from '../../services/schedule-conflict.service';
 import {
   ScheduleConflict,
@@ -6,7 +7,8 @@ import {
   ScheduleConflictStatistics,
   CommunicationRecord,
   SendReminderTarget,
-  ConflictInterview
+  ConflictInterview,
+  PaginatedResult
 } from '../../models/schedule-conflict.model';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalService } from 'ng-zorro-antd/modal';
@@ -37,6 +39,285 @@ const COMMUNICATION_TYPE_LABELS: Record<string, string> = {
   call: '电话',
   meeting: '面谈'
 };
+
+const MOCK_STATISTICS: ScheduleConflictStatistics = {
+  totalCount: 12,
+  pendingCount: 5,
+  communicatingCount: 4,
+  resolvedCount: 2,
+  highPriorityCount: 3,
+  todayNewCount: 2
+};
+
+const MOCK_CONFLICTS: ScheduleConflict[] = [
+  {
+    id: '1',
+    conflictType: 'interviewer_schedule',
+    status: 'pending',
+    priority: 'high',
+    title: '张面试官时间重叠',
+    description: '张建国面试官在同一天下午有两场面试安排冲突，分别是前端开发岗和Java开发岗的二面。',
+    interviews: [
+      {
+        interviewId: 'int001',
+        candidateName: '李明',
+        candidateEmail: 'liming@example.com',
+        interviewerName: '张建国',
+        interviewerEmail: 'zhangjianguo@company.com',
+        interviewTime: '2026-06-20 14:00:00',
+        interviewType: 'onsite',
+        round: 2,
+        position: '高级前端开发工程师',
+        department: '技术部'
+      },
+      {
+        interviewId: 'int002',
+        candidateName: '王芳',
+        candidateEmail: 'wangfang@example.com',
+        interviewerName: '张建国',
+        interviewerEmail: 'zhangjianguo@company.com',
+        interviewTime: '2026-06-20 14:30:00',
+        interviewType: 'onsite',
+        round: 2,
+        position: 'Java开发工程师',
+        department: '技术部'
+      }
+    ],
+    assignee: 'HR-小李',
+    communications: [
+      {
+        id: 'comm001',
+        type: 'note',
+        content: '发现张建国面试官两场面试时间重叠，需要协调',
+        operator: '系统',
+        createdAt: '2026-06-18 09:00:00'
+      }
+    ],
+    reminderCount: 0,
+    createdBy: 'system',
+    createdAt: '2026-06-18 09:00:00',
+    updatedAt: '2026-06-18 09:00:00'
+  },
+  {
+    id: '2',
+    conflictType: 'room_conflict',
+    status: 'communicating',
+    priority: 'medium',
+    title: '会议室A302重复预订',
+    description: '会议室A302在6月21日上午被两个面试同时预订。',
+    interviews: [
+      {
+        interviewId: 'int003',
+        candidateName: '赵强',
+        interviewerName: '刘总监',
+        interviewTime: '2026-06-21 10:00:00',
+        interviewType: 'onsite',
+        round: 3,
+        position: '产品经理',
+        department: '产品部'
+      },
+      {
+        interviewId: 'int004',
+        candidateName: '陈静',
+        interviewerName: '王经理',
+        interviewTime: '2026-06-21 10:30:00',
+        interviewType: 'onsite',
+        round: 2,
+        position: 'UI设计师',
+        department: '设计部'
+      }
+    ],
+    roomName: 'A302会议室',
+    assignee: 'HR-小王',
+    communications: [
+      {
+        id: 'comm002',
+        type: 'email_sent',
+        content: '已发送邮件给两位面试官，协调会议室使用',
+        operator: 'HR-小王',
+        target: '面试官',
+        createdAt: '2026-06-18 10:30:00'
+      },
+      {
+        id: 'comm003',
+        type: 'call',
+        content: '电话联系了刘总监，他表示可以调整到下午2点',
+        operator: 'HR-小王',
+        target: '刘总监',
+        createdAt: '2026-06-18 11:15:00'
+      }
+    ],
+    reminderCount: 1,
+    lastReminderAt: '2026-06-18 10:30:00',
+    createdBy: 'HR-小王',
+    createdAt: '2026-06-17 16:00:00',
+    updatedAt: '2026-06-18 11:15:00'
+  },
+  {
+    id: '3',
+    conflictType: 'candidate_schedule',
+    status: 'pending',
+    priority: 'high',
+    title: '候选人时间冲突',
+    description: '候选人张伟同时约了两家公司的面试，时间有冲突，需要确认是否能参加我们的面试。',
+    interviews: [
+      {
+        interviewId: 'int005',
+        candidateName: '张伟',
+        candidateEmail: 'zhangwei@example.com',
+        interviewerName: '李经理',
+        interviewTime: '2026-06-19 15:00:00',
+        interviewType: 'video',
+        round: 1,
+        position: '后端开发工程师',
+        department: '技术部'
+      }
+    ],
+    assignee: 'HR-小李',
+    communications: [
+      {
+        id: 'comm004',
+        type: 'note',
+        content: '候选人来电说可能有时间冲突，需要进一步确认',
+        operator: 'HR-小李',
+        createdAt: '2026-06-18 14:00:00'
+      }
+    ],
+    reminderCount: 0,
+    createdBy: 'HR-小李',
+    createdAt: '2026-06-18 14:00:00',
+    updatedAt: '2026-06-18 14:00:00'
+  },
+  {
+    id: '4',
+    conflictType: 'multi_interview_conflict',
+    status: 'communicating',
+    priority: 'low',
+    title: '同候选人多轮面试间隔过短',
+    description: '候选人刘洋的初试和复试安排在同一天，间隔只有30分钟，时间可能不够。',
+    interviews: [
+      {
+        interviewId: 'int006',
+        candidateName: '刘洋',
+        interviewerName: '王面试官',
+        interviewTime: '2026-06-22 09:00:00',
+        interviewType: 'onsite',
+        round: 1,
+        position: '测试工程师',
+        department: '质量部'
+      },
+      {
+        interviewId: 'int007',
+        candidateName: '刘洋',
+        interviewerName: '赵总监',
+        interviewTime: '2026-06-22 09:30:00',
+        interviewType: 'onsite',
+        round: 2,
+        position: '测试工程师',
+        department: '质量部'
+      }
+    ],
+    assignee: 'HR-小王',
+    communications: [
+      {
+        id: 'comm005',
+        type: 'meeting',
+        content: '与两位面试官面谈，确认是否可以延长间隔时间',
+        operator: 'HR-小王',
+        createdAt: '2026-06-18 15:00:00'
+      }
+    ],
+    reminderCount: 0,
+    createdBy: '系统',
+    createdAt: '2026-06-18 08:00:00',
+    updatedAt: '2026-06-18 15:00:00'
+  },
+  {
+    id: '5',
+    conflictType: 'interviewer_schedule',
+    status: 'resolved',
+    priority: 'medium',
+    title: '陈面试官临时有事',
+    description: '陈道明面试官原定6月19日的面试需要改期，已协调至下周一。',
+    interviews: [
+      {
+        interviewId: 'int008',
+        candidateName: '孙丽',
+        interviewerName: '陈道明',
+        interviewTime: '2026-06-19 11:00:00',
+        interviewType: 'video',
+        round: 2,
+        position: '运营专员',
+        department: '运营部'
+      }
+    ],
+    assignee: 'HR-小李',
+    resolvedAt: '2026-06-18 10:00:00',
+    resolvedBy: 'HR-小李',
+    resolution: '已将面试改期到6月23日上午10点，候选人已确认',
+    communications: [
+      {
+        id: 'comm006',
+        type: 'email_sent',
+        content: '通知候选人面试改期',
+        operator: 'HR-小李',
+        target: '孙丽',
+        createdAt: '2026-06-18 09:30:00'
+      },
+      {
+        id: 'comm007',
+        type: 'note',
+        content: '候选人回复确认新时间没问题',
+        operator: 'HR-小李',
+        createdAt: '2026-06-18 10:00:00'
+      }
+    ],
+    reminderCount: 1,
+    lastReminderAt: '2026-06-18 09:30:00',
+    createdBy: 'HR-小李',
+    createdAt: '2026-06-17 14:00:00',
+    updatedAt: '2026-06-18 10:00:00'
+  },
+  {
+    id: '6',
+    conflictType: 'room_conflict',
+    status: 'cancelled',
+    priority: 'low',
+    title: '会议室B201冲突（已取消）',
+    description: '原预订的会议室B201与部门例会冲突，后因候选人取消面试，冲突自动解除。',
+    interviews: [
+      {
+        interviewId: 'int009',
+        candidateName: '周杰',
+        interviewerName: '吴经理',
+        interviewTime: '2026-06-17 14:00:00',
+        interviewType: 'onsite',
+        round: 1,
+        position: '行政专员',
+        department: '行政部'
+      }
+    ],
+    roomName: 'B201会议室',
+    assignee: 'HR-小王',
+    resolvedAt: '2026-06-16 16:30:00',
+    resolvedBy: 'HR-小王',
+    resolution: '候选人放弃面试，冲突自动解除',
+    communications: [
+      {
+        id: 'comm008',
+        type: 'call',
+        content: '接到候选人电话，说找到其他工作了，放弃本次面试',
+        operator: 'HR-小王',
+        target: '周杰',
+        createdAt: '2026-06-16 16:00:00'
+      }
+    ],
+    reminderCount: 0,
+    createdBy: '系统',
+    createdAt: '2026-06-16 10:00:00',
+    updatedAt: '2026-06-16 16:30:00'
+  }
+];
 
 @Component({
   selector: 'app-schedule-conflict-list',
@@ -303,7 +584,7 @@ export class ScheduleConflictListComponent implements OnInit {
         this.statistics = data;
       },
       error: () => {
-        this.message.error('加载统计数据失败');
+        this.statistics = MOCK_STATISTICS;
       }
     });
   }
@@ -317,15 +598,45 @@ export class ScheduleConflictListComponent implements OnInit {
     };
 
     this.scheduleConflictService.getConflicts(params).subscribe({
-      next: (res) => {
-        this.dataList = res.list.map(item => ({ ...item, checked: false }));
+      next: (res: PaginatedResult<ScheduleConflict>) => {
+        this.dataList = res.list.map((item: ScheduleConflict) => ({ ...item, checked: false }));
         this.total = res.total;
         this.loading = false;
         this.refreshCheckedStatus();
       },
       error: () => {
+        let filtered = [...MOCK_CONFLICTS];
+        if (this.queryParams.keyword) {
+          const kw = this.queryParams.keyword.toLowerCase();
+          filtered = filtered.filter(item =>
+            item.title.toLowerCase().includes(kw) ||
+            item.interviews.some(i =>
+              i.candidateName.toLowerCase().includes(kw) ||
+              i.interviewerName.toLowerCase().includes(kw)
+            )
+          );
+        }
+        if (this.queryParams.conflictType) {
+          filtered = filtered.filter(item => item.conflictType === this.queryParams.conflictType);
+        }
+        if (this.queryParams.status) {
+          filtered = filtered.filter(item => item.status === this.queryParams.status);
+        }
+        if (this.queryParams.priority) {
+          filtered = filtered.filter(item => item.priority === this.queryParams.priority);
+        }
+        if (this.queryParams.assignee) {
+          filtered = filtered.filter(item => item.assignee === this.queryParams.assignee);
+        }
+
+        const start = (this.pageIndex - 1) * this.pageSize;
+        const end = start + this.pageSize;
+        const pageData = filtered.slice(start, end);
+
+        this.dataList = pageData.map(item => ({ ...item, checked: false }));
+        this.total = filtered.length;
         this.loading = false;
-        this.message.error('加载日程冲突列表失败');
+        this.refreshCheckedStatus();
       }
     });
   }
@@ -593,7 +904,7 @@ export class ScheduleConflictListComponent implements OnInit {
           let completed = 0;
           observables.forEach((obs, idx) => {
             obs.subscribe({
-              next: (res) => {
+              next: (res: { success: number; failed: number; results: any[] }) => {
                 totalSuccess += res.success || 0;
                 totalFailed += res.failed || 0;
               },

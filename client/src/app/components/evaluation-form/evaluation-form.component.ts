@@ -36,18 +36,17 @@ import { NzModalService } from 'ng-zorro-antd/modal';
                 最后更新时间：{{ lastUpdatedText }}
               </div>
             </div>
-            <div *ngIf="!isSubmitted">
+            <div>
               <button nz-button style="margin-right: 8px;" (click)="back()">返回列表</button>
-              <button nz-button nzType="default" (click)="saveDraft()" [disabled]="saving" style="margin-right: 8px;">
+              <button nz-button nzType="default" (click)="saveDraft()" [disabled]="saving || isSubmitted" style="margin-right: 8px;">
                 <i nz-icon nzType="save"></i>
                 {{ saving ? '保存中...' : '保存草稿' }}
               </button>
-              <button nz-button nzType="primary" (click)="submitEvaluation()" [disabled]="submitting">
+              <button nz-button nzType="primary" (click)="submitEvaluation()" [disabled]="submitting || isSubmitted">
                 <i nz-icon nzType="check-circle"></i>
-                {{ submitting ? '提交中...' : '提交评价' }}
+                {{ isSubmitted ? '已提交' : (submitting ? '提交中...' : '提交评价') }}
               </button>
             </div>
-            <button nz-button *ngIf="isSubmitted" (click)="back()">返回列表</button>
           </div>
 
           <nz-divider style="margin: 12px 0 24px;"></nz-divider>
@@ -302,21 +301,20 @@ import { NzModalService } from 'ng-zorro-antd/modal';
           </div>
         </div>
 
-        <div *ngIf="evaluation && !isSubmitted" style="text-align: center; background: #fff; padding: 24px; border-radius: 8px;">
-          <div style="margin-bottom: 16px; color: rgba(0,0,0,0.45); font-size: 13px;">
+        <div *ngIf="evaluation" style="text-align: center; background: #fff; padding: 24px; border-radius: 8px;">
+          <div *ngIf="!isSubmitted" style="margin-bottom: 16px; color: rgba(0,0,0,0.45); font-size: 13px;">
             提交后评价将无法修改，请确认内容无误后再提交
           </div>
-          <button nz-button style="margin-right: 12px; padding: 6px 24px;" (click)="back()">取消</button>
-          <button nz-button nzType="default" (click)="saveDraft()" [disabled]="saving" style="margin-right: 12px; padding: 6px 24px;">
+          <div *ngIf="isSubmitted" style="margin-bottom: 16px; color: #52c41a; font-size: 13px;">
+            <i nz-icon nzType="check-circle"></i> 评价已成功提交
+          </div>
+          <button nz-button style="margin-right: 12px; padding: 6px 24px;" (click)="back()">{{ isSubmitted ? '返回评价列表' : '取消' }}</button>
+          <button nz-button nzType="default" (click)="saveDraft()" [disabled]="saving || isSubmitted" style="margin-right: 12px; padding: 6px 24px;">
             <i nz-icon nzType="save"></i> 保存草稿
           </button>
-          <button nz-button nzType="primary" (click)="submitEvaluation()" [disabled]="submitting" style="padding: 6px 32px;">
-            <i nz-icon nzType="check-circle"></i> 提交评价
+          <button nz-button nzType="primary" (click)="submitEvaluation()" [disabled]="submitting || isSubmitted" style="padding: 6px 32px;">
+            <i nz-icon nzType="check-circle"></i> {{ isSubmitted ? '已提交' : (submitting ? '提交中...' : '提交评价') }}
           </button>
-        </div>
-
-        <div *ngIf="isSubmitted" style="text-align: center; padding: 24px;">
-          <button nz-button (click)="back()" style="padding: 6px 24px;">返回评价列表</button>
         </div>
       </ng-container>
 

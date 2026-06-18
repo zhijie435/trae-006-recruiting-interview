@@ -1,4 +1,5 @@
 node_modules/
+client/.angular/cache/
 .next/
 dist/
 coverage/
