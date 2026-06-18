@@ -29,12 +29,16 @@ import { NzAvatarModule } from 'ng-zorro-antd/avatar';
 import { NzRateModule } from 'ng-zorro-antd/rate';
 import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
+import { NzTimelineModule } from 'ng-zorro-antd/timeline';
+import { NzFormModule } from 'ng-zorro-antd/form';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ReminderListComponent } from './components/reminder-list/reminder-list.component';
 import { EvaluationListComponent } from './components/evaluation-list/evaluation-list.component';
 import { EvaluationFormComponent } from './components/evaluation-form/evaluation-form.component';
+import { OfferListComponent } from './components/offer-list/offer-list.component';
+import { OfferDetailComponent } from './components/offer-detail/offer-detail.component';
 
 import { IconDefinition } from '@ant-design/icons-angular';
 import {
@@ -56,7 +60,17 @@ import {
   BarChartOutline,
   MessageOutline,
   FileTextOutline,
-  AuditOutline
+  AuditOutline,
+  PlusOutline,
+  ArrowUpOutline,
+  RollbackOutline,
+  StopOutline,
+  UndoOutline,
+  CheckOutline,
+  CloseOutline,
+  SolutionOutline,
+  HistoryOutline,
+  ThunderboltOutline
 } from '@ant-design/icons-angular/icons';
 
 const icons: IconDefinition[] = [
@@ -78,7 +92,17 @@ const icons: IconDefinition[] = [
   BarChartOutline,
   MessageOutline,
   FileTextOutline,
-  AuditOutline
+  AuditOutline,
+  PlusOutline,
+  ArrowUpOutline,
+  RollbackOutline,
+  StopOutline,
+  UndoOutline,
+  CheckOutline,
+  CloseOutline,
+  SolutionOutline,
+  HistoryOutline,
+  ThunderboltOutline
 ];
 
 @NgModule({
@@ -86,7 +110,9 @@ const icons: IconDefinition[] = [
     AppComponent,
     ReminderListComponent,
     EvaluationListComponent,
-    EvaluationFormComponent
+    EvaluationFormComponent,
+    OfferListComponent,
+    OfferDetailComponent
   ],
   imports: [
     BrowserModule,
@@ -119,6 +145,8 @@ const icons: IconDefinition[] = [
     NzRateModule,
     NzRadioModule,
     NzDividerModule,
+    NzTimelineModule,
+    NzFormModule,
     NzIconModule.forRoot(icons)
   ],
   providers: [],

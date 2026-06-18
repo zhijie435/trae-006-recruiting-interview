@@ -5,6 +5,7 @@ const Interviewer = require('../models/Interviewer');
 const Interview = require('../models/Interview');
 const Reminder = require('../models/Reminder');
 const Evaluation = require('../models/Evaluation');
+const Offer = require('../models/Offer');
 
 const candidatesData = [
   { name: '张三', email: 'zhangsan@example.com', phone: '13800138001', position: '前端工程师', department: '技术部' },
@@ -48,6 +49,7 @@ async function seed() {
   await Interview.deleteMany({});
   await Reminder.deleteMany({});
   await Evaluation.deleteMany({});
+  await Offer.deleteMany({});
 
   const candidates = await Candidate.create(candidatesData);
   const interviewers = await Interviewer.create(interviewersData);
@@ -176,6 +178,140 @@ async function seed() {
 
   const createdEvaluations = await Promise.all(evaluationPromises);
   console.log(`✅ 已创建 ${createdEvaluations.length} 条评价数据（${submittedInterviews.length}条已提交/${draftInterviews.length}条草稿）`);
+
+  console.log('\n📦 初始化 Offer 审批数据...');
+  const offerService = require('../services/offerService');
+
+  const offerDraft = await offerService.createOffer({
+    candidateName: '张三',
+    candidatePhone: '13800138001',
+    candidateEmail: 'zhangsan@example.com',
+    position: '前端工程师',
+    department: '技术部',
+    employmentType: 'full_time',
+    workLocation: '北京-总部',
+    salaryMonthly: 25000,
+    salaryMonths: 14,
+    bonus: '年终奖2-4个月',
+    probationMonths: 3,
+    entryDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+    remark: '候选人技术评估优秀，建议尽快发出Offer'
+  }, 'HR-小李');
+
+  const offerPending = await offerService.createOffer({
+    candidateName: '王五',
+    candidatePhone: '13800138003',
+    candidateEmail: 'wangwu@example.com',
+    position: '产品经理',
+    department: '产品部',
+    employmentType: 'full_time',
+    workLocation: '北京-总部',
+    salaryMonthly: 30000,
+    salaryMonths: 14,
+    bonus: '年终奖3个月起',
+    probationMonths: 6,
+    entryDate: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000),
+    remark: '高级产品经理，需CTO终面确认'
+  }, 'HR-小李');
+  await offerService.transition(offerPending.id, 'submit', 'HR-小李', '薪资较高，请领导审批');
+
+  const offerApproved = await offerService.createOffer({
+    candidateName: '李四',
+    candidatePhone: '13800138002',
+    candidateEmail: 'lisi@example.com',
+    position: '后端工程师',
+    department: '技术部',
+    employmentType: 'full_time',
+    workLocation: '上海-分公司',
+    salaryMonthly: 28000,
+    salaryMonths: 13,
+    bonus: '年终奖1-3个月',
+    probationMonths: 3,
+    entryDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+    remark: '后端资深，技术匹配度高'
+  }, 'HR-小李');
+  await offerService.transition(offerApproved.id, 'submit', 'HR-小李', '常规岗位，请审批');
+  await offerService.transition(offerApproved.id, 'approve', '技术总监-陈', '薪资合理，同意录用');
+
+  const offerSent = await offerService.createOffer({
+    candidateName: '赵六',
+    candidatePhone: '13800138004',
+    candidateEmail: 'zhaoliu@example.com',
+    position: 'UI设计师',
+    department: '设计部',
+    employmentType: 'full_time',
+    workLocation: '北京-总部',
+    salaryMonthly: 20000,
+    salaryMonths: 13,
+    bonus: '年终奖2个月',
+    probationMonths: 3,
+    entryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    remark: '设计能力突出'
+  }, 'HR-小王');
+  await offerService.transition(offerSent.id, 'submit', 'HR-小王', '设计部紧急补员');
+  await offerService.transition(offerSent.id, 'approve', '设计主管-黄', '同意');
+  await offerService.transition(offerSent.id, 'send', 'HR-小王', '已通过邮件发送给候选人');
+
+  const offerAccepted = await offerService.createOffer({
+    candidateName: '周八',
+    candidatePhone: '13800138006',
+    candidateEmail: 'zhouba@example.com',
+    position: '全栈工程师',
+    department: '技术部',
+    employmentType: 'full_time',
+    workLocation: '深圳-分公司',
+    salaryMonthly: 32000,
+    salaryMonths: 14,
+    bonus: '年终奖3个月+股票期权',
+    probationMonths: 3,
+    entryDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+    remark: '候选人已口头确认接受'
+  }, 'HR-小李');
+  await offerService.transition(offerAccepted.id, 'submit', 'HR-小李', '高潜候选人');
+  await offerService.transition(offerAccepted.id, 'approve', 'CTO-林', '同意录用');
+  await offerService.transition(offerAccepted.id, 'send', 'HR-小李', '已发offer邮件');
+  await offerService.transition(offerAccepted.id, 'accept', 'HR-小李', '候选人邮件确认接受');
+
+  const offerRejected = await offerService.createOffer({
+    candidateName: '孙七',
+    candidatePhone: '13800138005',
+    candidateEmail: 'sunqi@example.com',
+    position: '运营专员',
+    department: '运营部',
+    employmentType: 'full_time',
+    workLocation: '北京-总部',
+    salaryMonthly: 12000,
+    salaryMonths: 13,
+    bonus: '年终奖1个月',
+    probationMonths: 3,
+    entryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    remark: '运营经验丰富但薪资超出预算'
+  }, 'HR-小王');
+  await offerService.transition(offerRejected.id, 'submit', 'HR-小王', '请审批');
+  await offerService.transition(offerRejected.id, 'reject', '运营总监-杨', '薪资超预算，建议重新评估或降薪录用');
+
+  const offerDeclined = await offerService.createOffer({
+    candidateName: '吴九',
+    candidatePhone: '13800138007',
+    candidateEmail: 'wujiu@example.com',
+    position: '高级产品经理',
+    department: '产品部',
+    employmentType: 'full_time',
+    workLocation: '北京-总部',
+    salaryMonthly: 35000,
+    salaryMonths: 14,
+    bonus: '年终奖3个月+股票',
+    probationMonths: 6,
+    entryDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+    remark: '候选人考虑其他公司offer'
+  }, 'HR-小李');
+  await offerService.transition(offerDeclined.id, 'submit', 'HR-小李', '紧急');
+  await offerService.transition(offerDeclined.id, 'approve', 'CTO-林', '同意');
+  await offerService.transition(offerDeclined.id, 'send', 'HR-小李', '已发出');
+  await offerService.transition(offerDeclined.id, 'decline', 'HR-小李', '候选人选择其他公司');
+
+  const offerCount = await Offer.countDocuments();
+  console.log(`✅ 已创建 ${offerCount} 条 Offer 数据（覆盖草稿/审批中/已通过/已发出/已接受/已驳回/候选人拒绝 各状态）`);
 
   console.log('\n🎉 测试数据初始化完成！');
   console.log('\n📊 数据统计:');

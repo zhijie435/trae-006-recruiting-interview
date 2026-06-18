@@ -17,6 +17,10 @@ import { Router } from '@angular/router';
               我的评价
               <nz-badge [nzCount]="stats.overdueCount" nzSize="small" [nzOffset]="[4, -2]" *ngIf="stats.overdueCount > 0" style="margin-left: 4px;"></nz-badge>
             </li>
+            <li nz-menu-item (click)="router.navigate(['/offers'])" nzValue="offers">
+              <i nz-icon nzType="audit" style="margin-right: 8px;"></i>
+              Offer 管理
+            </li>
             <li nz-menu-item (click)="router.navigate(['/reminders'])" nzValue="reminders">
               <i nz-icon nzType="bell" style="margin-right: 8px;"></i>
               评价催办
