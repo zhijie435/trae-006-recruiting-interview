@@ -1,3 +1,13 @@
+import {
+  InterviewType,
+  InterviewStatus,
+  EvaluationStatus,
+  ReminderType,
+  ReminderStatus,
+  ReminderChannel,
+  RecommendationType
+} from '../constants';
+
 export interface Candidate {
   id: string;
   name: string;
@@ -21,20 +31,20 @@ export interface Interview {
   interviewerId: string;
   interviewer: Interviewer;
   interviewTime: string;
-  interviewType: 'phone' | 'onsite' | 'video' | 'final';
+  interviewType: InterviewType;
   round: number;
-  status: 'pending' | 'completed' | 'cancelled';
+  status: InterviewStatus;
   evaluationDeadline: string;
-  evaluationStatus: 'pending' | 'submitted' | 'overdue';
+  evaluationStatus: EvaluationStatus;
 }
 
 export interface Reminder {
   id: string;
   interviewId: string;
   interview: Interview;
-  type: 'evaluation';
-  status: 'pending' | 'sent' | 'failed';
-  channel: 'email';
+  type: ReminderType;
+  status: ReminderStatus;
+  channel: ReminderChannel;
   sentAt?: string;
   createdBy: string;
   createdAt: string;
@@ -43,7 +53,7 @@ export interface Reminder {
 
 export interface ReminderQueryParams {
   keyword?: string;
-  evaluationStatus?: string;
+  evaluationStatus?: EvaluationStatus | string;
   department?: string;
   interviewerName?: string;
   overdueDays?: number;
@@ -71,8 +81,6 @@ export interface ScoreDimension {
   score: number;
   comment?: string;
 }
-
-export type RecommendationType = 'strong_hire' | 'hire' | 'borderline' | 'no_hire' | 'pending';
 
 export interface Evaluation {
   id?: string;
@@ -105,10 +113,10 @@ export interface PendingEvaluationItem {
   candidate: Candidate;
   interviewer: Interviewer;
   interviewTime: string;
-  interviewType: 'phone' | 'onsite' | 'video' | 'final';
+  interviewType: InterviewType;
   round: number;
   evaluationDeadline: string;
-  evaluationStatus: 'pending' | 'overdue' | 'draft' | 'submitted';
+  evaluationStatus: EvaluationStatus;
   overdueDays: number;
   hasEvaluation: boolean;
   evaluationStatusText?: string;

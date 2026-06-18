@@ -3,25 +3,14 @@ import { Router } from '@angular/router';
 import { CandidateService } from '../../services/candidate.service';
 import { Candidate, CandidateQueryParams } from '../../models/candidate.model';
 import { NzMessageService } from 'ng-zorro-antd/message';
-
-const INTERVIEW_TYPE_MAP: Record<string, string> = {
-  phone: '电话面',
-  video: '视频面',
-  onsite: '现场面',
-  final: '终面'
-};
-
-const EVALUATION_STATUS_MAP: Record<string, { label: string; color: string }> = {
-  pending: { label: '待评价', color: 'gold' },
-  submitted: { label: '已评价', color: 'green' },
-  overdue: { label: '已逾期', color: 'red' }
-};
-
-const INTERVIEW_STATUS_MAP: Record<string, { label: string; color: string }> = {
-  pending: { label: '待面试', color: 'blue' },
-  completed: { label: '已完成', color: 'green' },
-  cancelled: { label: '已取消', color: 'default' }
-};
+import {
+  INTERVIEW_TYPE_MAP,
+  EVALUATION_STATUS_MAP,
+  INTERVIEW_STATUS_MAP,
+  InterviewStatus,
+  EvaluationStatus,
+  InterviewType
+} from '../../constants';
 
 @Component({
   selector: 'app-candidate-list',
@@ -150,6 +139,10 @@ const INTERVIEW_STATUS_MAP: Record<string, { label: string; color: string }> = {
   `
 })
 export class CandidateListComponent implements OnInit {
+  readonly INTERVIEW_TYPE_MAP = INTERVIEW_TYPE_MAP;
+  readonly EVALUATION_STATUS_MAP = EVALUATION_STATUS_MAP;
+  readonly INTERVIEW_STATUS_MAP = INTERVIEW_STATUS_MAP;
+
   loading = false;
   dataList: Candidate[] = [];
   total = 0;
@@ -225,23 +218,23 @@ export class CandidateListComponent implements OnInit {
     return `${year}-${month}-${day} ${hours}:${minutes}`;
   }
 
-  getInterviewTypeLabel(type: string): string {
-    return INTERVIEW_TYPE_MAP[type] || type;
+  getInterviewTypeLabel(type: InterviewType | string): string {
+    return INTERVIEW_TYPE_MAP[type as InterviewType] || type;
   }
 
-  getEvaluationStatusLabel(status: string): string {
-    return EVALUATION_STATUS_MAP[status]?.label || status;
+  getEvaluationStatusLabel(status: EvaluationStatus | string): string {
+    return EVALUATION_STATUS_MAP[status as EvaluationStatus]?.label || status;
   }
 
-  getEvaluationStatusColor(status: string): string {
-    return EVALUATION_STATUS_MAP[status]?.color || 'default';
+  getEvaluationStatusColor(status: EvaluationStatus | string): string {
+    return EVALUATION_STATUS_MAP[status as EvaluationStatus]?.color || 'default';
   }
 
-  getInterviewStatusLabel(status: string): string {
-    return INTERVIEW_STATUS_MAP[status]?.label || status;
+  getInterviewStatusLabel(status: InterviewStatus | string): string {
+    return INTERVIEW_STATUS_MAP[status as InterviewStatus]?.label || status;
   }
 
-  getInterviewStatusColor(status: string): string {
-    return INTERVIEW_STATUS_MAP[status]?.color || 'default';
+  getInterviewStatusColor(status: InterviewStatus | string): string {
+    return INTERVIEW_STATUS_MAP[status as InterviewStatus]?.color || 'default';
   }
 }

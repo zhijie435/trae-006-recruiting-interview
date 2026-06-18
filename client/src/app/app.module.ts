@@ -34,6 +34,10 @@ import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzPageHeaderModule } from 'ng-zorro-antd/page-header';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
+import { NzProgressModule } from 'ng-zorro-antd/progress';
+import { NzSwitchModule } from 'ng-zorro-antd/switch';
+import { NzAlertModule } from 'ng-zorro-antd/alert';
+import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -45,6 +49,11 @@ import { OfferDetailComponent } from './components/offer-detail/offer-detail.com
 import { ScheduleConflictListComponent } from './components/schedule-conflict-list/schedule-conflict-list.component';
 import { CandidateListComponent } from './components/candidate-list/candidate-list.component';
 import { CandidateDetailComponent } from './components/candidate-detail/candidate-detail.component';
+import { FollowUpDashboardComponent } from './components/follow-up-dashboard/follow-up-dashboard.component';
+import { FollowUpListComponent } from './components/follow-up-list/follow-up-list.component';
+import { FollowUpDetailComponent } from './components/follow-up-detail/follow-up-detail.component';
+import { FollowUpModalComponent } from './components/follow-up-modal/follow-up-modal.component';
+import { FollowUpTemplateComponent } from './components/follow-up-template/follow-up-template.component';
 
 import { IconDefinition } from '@ant-design/icons-angular';
 import {
@@ -84,7 +93,13 @@ import {
   StarFill,
   ArrowLeftOutline,
   WarningOutline,
-  InfoCircleOutline
+  InfoCircleOutline,
+  DashboardOutline,
+  UnorderedListOutline,
+  CopyOutline,
+  BulbOutline,
+  RedoOutline,
+  WechatOutline
 } from '@ant-design/icons-angular/icons';
 
 const icons: IconDefinition[] = [
@@ -124,7 +139,13 @@ const icons: IconDefinition[] = [
   StarFill,
   ArrowLeftOutline,
   WarningOutline,
-  InfoCircleOutline
+  InfoCircleOutline,
+  DashboardOutline,
+  UnorderedListOutline,
+  CopyOutline,
+  BulbOutline,
+  RedoOutline,
+  WechatOutline
 ];
 
 @NgModule({
@@ -137,7 +158,12 @@ const icons: IconDefinition[] = [
     OfferDetailComponent,
     ScheduleConflictListComponent,
     CandidateListComponent,
-    CandidateDetailComponent
+    CandidateDetailComponent,
+    FollowUpDashboardComponent,
+    FollowUpListComponent,
+    FollowUpDetailComponent,
+    FollowUpModalComponent,
+    FollowUpTemplateComponent
   ],
   imports: [
     BrowserModule,
@@ -175,6 +201,10 @@ const icons: IconDefinition[] = [
     NzTabsModule,
     NzPageHeaderModule,
     NzDescriptionsModule,
+    NzProgressModule,
+    NzSwitchModule,
+    NzAlertModule,
+    NzStatisticModule,
     NzIconModule.forRoot(icons)
   ],
   providers: [],

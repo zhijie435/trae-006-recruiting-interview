@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ReminderService } from './services/reminder.service';
 import { ScheduleConflictService } from './services/schedule-conflict.service';
+import { UserRole, USER_ROLE_LABEL_MAP } from './constants';
 
 @Component({
   selector: 'app-root',
@@ -53,15 +54,10 @@ export class AppComponent implements OnInit {
   selectedMenu = ['candidates'];
   stats = { overdueCount: 0 };
   conflictStats = { pendingCount: 0, communicatingCount: 0 };
-  currentUserRole: 'hr' | 'interviewer' | 'admin' = 'interviewer';
+  currentUserRole: UserRole = UserRole.INTERVIEWER;
 
   get currentUserRoleText(): string {
-    const roleMap: Record<string, string> = {
-      hr: 'HR',
-      interviewer: '面试官',
-      admin: '管理员'
-    };
-    return roleMap[this.currentUserRole] || '面试官';
+    return USER_ROLE_LABEL_MAP[this.currentUserRole] || '面试官';
   }
 
   constructor(

@@ -13,43 +13,32 @@ import {
 } from '../../models/candidate.model';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalService } from 'ng-zorro-antd/modal';
+import {
+  INTERVIEW_TYPE_MAP,
+  EVALUATION_STATUS_MAP,
+  INTERVIEW_STATUS_MAP,
+  OFFER_STATUS_MAP,
+  RECOMMENDATION_MAP,
+  RECOMMENDATION_CLASS_MAP,
+  COMMUNICATION_TYPE_OPTIONS as COMM_TYPE_OPTS,
+  DIRECTION_OPTIONS as DIR_OPTS,
+  OPERATOR_ROLE_OPTIONS as ROLE_OPTS,
+  InterviewType,
+  InterviewStatus,
+  EvaluationStatus,
+  OfferStatus,
+  RecommendationType,
+  CommunicationType,
+  CommunicationDirection,
+  UserRole
+} from '../../constants';
 
-const INTERVIEW_TYPE_MAP: Record<string, string> = {
-  phone: '电话面',
-  video: '视频面',
-  onsite: '现场面',
-  final: '终面'
-};
-
-const EVALUATION_STATUS_MAP: Record<string, { label: string; color: string }> = {
-  pending: { label: '待评价', color: 'gold' },
-  submitted: { label: '已评价', color: 'green' },
-  overdue: { label: '已逾期', color: 'red' }
-};
-
-const INTERVIEW_STATUS_MAP: Record<string, { label: string; color: string }> = {
-  pending: { label: '待面试', color: 'blue' },
-  completed: { label: '已完成', color: 'green' },
-  cancelled: { label: '已取消', color: 'default' }
-};
-
-const OFFER_STATUS_MAP: Record<string, { label: string; color: string }> = {
-  draft: { label: '草稿', color: 'default' },
-  pending: { label: '审批中', color: 'gold' },
-  approved: { label: '已通过', color: 'green' },
-  sent: { label: '已发出', color: 'blue' },
-  accepted: { label: '已接受', color: 'green' },
-  rejected: { label: '已驳回', color: 'red' },
-  declined: { label: '候选人拒绝', color: 'orange' }
-};
-
-const RECOMMENDATION_MAP: Record<string, string> = {
-  strong_hire: '强烈推荐',
-  hire: '推荐',
-  borderline: '待定',
-  no_hire: '不推荐',
-  pending: '待评估'
-};
+const _OFFER_STATUS_MAP: Record<string, { label: string; color: string }> = OFFER_STATUS_MAP as Record<string, { label: string; color: string }>;
+const _RECOMMENDATION_MAP: Record<string, string> = RECOMMENDATION_MAP as Record<string, string>;
+const _RECOMMENDATION_CLASS_MAP: Record<string, string> = RECOMMENDATION_CLASS_MAP as Record<string, string>;
+const _INTERVIEW_TYPE_MAP: Record<string, string> = INTERVIEW_TYPE_MAP as Record<string, string>;
+const _EVALUATION_STATUS_MAP: Record<string, { label: string; color: string }> = EVALUATION_STATUS_MAP as Record<string, { label: string; color: string }>;
+const _INTERVIEW_STATUS_MAP: Record<string, { label: string; color: string }> = INTERVIEW_STATUS_MAP as Record<string, { label: string; color: string }>;
 
 @Component({
   selector: 'app-candidate-detail',
@@ -332,9 +321,9 @@ const RECOMMENDATION_MAP: Record<string, string> = {
   `]
 })
 export class CandidateDetailComponent implements OnInit {
-  readonly COMMUNICATION_TYPE_OPTIONS = COMMUNICATION_TYPE_OPTIONS;
-  readonly DIRECTION_OPTIONS = DIRECTION_OPTIONS;
-  readonly OPERATOR_ROLE_OPTIONS = OPERATOR_ROLE_OPTIONS;
+  readonly COMMUNICATION_TYPE_OPTIONS = COMM_TYPE_OPTS;
+  readonly DIRECTION_OPTIONS = DIR_OPTS;
+  readonly OPERATOR_ROLE_OPTIONS = ROLE_OPTS;
 
   loading = false;
   candidate: CandidateDetail | null = null;
@@ -416,7 +405,7 @@ export class CandidateDetailComponent implements OnInit {
     };
 
     this.candidateService.getCommunications(this.candidate.id, params).subscribe({
-      next: (res) => {
+      next: (res: PaginatedResult<CandidateCommunication>) => {
         this.communications = reset ? res.list : [...this.communications, ...res.list];
         this.commTotal = res.total;
         this.commLoading = false;
@@ -434,9 +423,9 @@ export class CandidateDetailComponent implements OnInit {
   }
 
   openAddCommunicationModal(): void {
-    const typeOptions = COMMUNICATION_TYPE_OPTIONS.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
-    const directionOptions = DIRECTION_OPTIONS.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
-    const roleOptions = OPERATOR_ROLE_OPTIONS.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+    const typeOptions = COMM_TYPE_OPTS.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+    const directionOptions = DIR_OPTS.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+    const roleOptions = ROLE_OPTS.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
 
     const modal = this.modal.create({
       nzTitle: '添加沟通记录',
@@ -526,8 +515,8 @@ export class CandidateDetailComponent implements OnInit {
           }
 
           this.candidateService.addCommunication(this.candidate.id, {
-            type: typeEl?.value as any,
-            direction: directionEl?.value as any,
+            type: typeEl?.value as CommunicationType,
+            direction: directionEl?.value as CommunicationDirection,
             title,
             content,
             contactPerson: this.candidate.name,
@@ -535,7 +524,7 @@ export class CandidateDetailComponent implements OnInit {
             result: resultEl?.value?.trim() || undefined,
             nextStep: nextStepEl?.value?.trim() || undefined,
             operator,
-            operatorRole: roleEl?.value as any,
+            operatorRole: roleEl?.value as UserRole,
             isImportant: importantEl?.checked || false
           }).subscribe({
             next: () => {
@@ -676,78 +665,72 @@ export class CandidateDetailComponent implements OnInit {
     return `${year}-${month}-${day}`;
   }
 
-  getInterviewTypeLabel(type: string): string {
-    return INTERVIEW_TYPE_MAP[type] || type;
+  getInterviewTypeLabel(type: InterviewType | string): string {
+    return _INTERVIEW_TYPE_MAP[type] || type;
   }
 
-  getEvaluationStatusLabel(status: string): string {
-    return EVALUATION_STATUS_MAP[status]?.label || status;
+  getEvaluationStatusLabel(status: EvaluationStatus | string): string {
+    return _EVALUATION_STATUS_MAP[status]?.label || status;
   }
 
-  getEvaluationStatusColor(status: string): string {
-    return EVALUATION_STATUS_MAP[status]?.color || 'default';
+  getEvaluationStatusColor(status: EvaluationStatus | string): string {
+    return _EVALUATION_STATUS_MAP[status]?.color || 'default';
   }
 
-  getInterviewStatusLabel(status: string): string {
-    return INTERVIEW_STATUS_MAP[status]?.label || status;
+  getInterviewStatusLabel(status: InterviewStatus | string): string {
+    return _INTERVIEW_STATUS_MAP[status]?.label || status;
   }
 
-  getInterviewStatusColor(status: string): string {
-    return INTERVIEW_STATUS_MAP[status]?.color || 'default';
+  getInterviewStatusColor(status: InterviewStatus | string): string {
+    return _INTERVIEW_STATUS_MAP[status]?.color || 'default';
   }
 
-  getOfferStatusLabel(status: string): string {
-    return OFFER_STATUS_MAP[status]?.label || status;
+  getOfferStatusLabel(status: OfferStatus | string): string {
+    return _OFFER_STATUS_MAP[status]?.label || status;
   }
 
-  getOfferStatusColor(status: string): string {
-    return OFFER_STATUS_MAP[status]?.color || 'default';
+  getOfferStatusColor(status: OfferStatus | string): string {
+    return _OFFER_STATUS_MAP[status]?.color || 'default';
   }
 
-  getRecommendationLabel(recommendation: string): string {
-    return RECOMMENDATION_MAP[recommendation] || recommendation;
+  getRecommendationLabel(recommendation: RecommendationType | string): string {
+    return _RECOMMENDATION_MAP[recommendation] || recommendation;
   }
 
-  getRecommendationClass(recommendation: string): string {
-    switch (recommendation) {
-      case 'strong_hire': return 'recommend-strong';
-      case 'hire': return 'recommend-hire';
-      case 'borderline': return 'recommend-borderline';
-      case 'no_hire': return 'recommend-nohire';
-      default: return 'recommend-pending';
-    }
+  getRecommendationClass(recommendation: RecommendationType | string): string {
+    return _RECOMMENDATION_CLASS_MAP[recommendation] || 'recommend-pending';
   }
 
-  getCommTypeLabel(type: string): string {
-    return COMMUNICATION_TYPE_OPTIONS.find(o => o.value === type)?.label || type;
+  getCommTypeLabel(type: CommunicationType | string): string {
+    return COMM_TYPE_OPTS.find(o => o.value === type)?.label || type;
   }
 
-  getCommTypeColor(type: string): string {
-    return COMMUNICATION_TYPE_OPTIONS.find(o => o.value === type)?.color || 'default';
+  getCommTypeColor(type: CommunicationType | string): string {
+    return COMM_TYPE_OPTS.find(o => o.value === type)?.color || 'default';
   }
 
-  getCommIconName(type: string): string {
-    return COMMUNICATION_TYPE_OPTIONS.find(o => o.value === type)?.icon || 'file-text';
+  getCommIconName(type: CommunicationType | string): string {
+    return COMM_TYPE_OPTS.find(o => o.value === type)?.icon || 'file-text';
   }
 
-  getCommIcon(type: string) {
+  getCommIcon(type: CommunicationType | string) {
     const icon = this.getCommIconName(type);
     return `<i nz-icon nzType="${icon}" style="font-size: 16px;"></i>`;
   }
 
-  getDirectionLabel(direction: string): string {
-    return DIRECTION_OPTIONS.find(o => o.value === direction)?.label || direction;
+  getDirectionLabel(direction: CommunicationDirection | string): string {
+    return DIR_OPTS.find(o => o.value === direction)?.label || direction;
   }
 
-  getDirectionColor(direction: string): string {
-    return DIRECTION_OPTIONS.find(o => o.value === direction)?.color || 'default';
+  getDirectionColor(direction: CommunicationDirection | string): string {
+    return DIR_OPTS.find(o => o.value === direction)?.color || 'default';
   }
 
-  getOperatorRoleLabel(role: string): string {
-    return OPERATOR_ROLE_OPTIONS.find(o => o.value === role)?.label || role;
+  getOperatorRoleLabel(role: UserRole | string): string {
+    return ROLE_OPTS.find(o => o.value === role)?.label || role;
   }
 
-  getOperatorRoleColor(role: string): string {
-    return OPERATOR_ROLE_OPTIONS.find(o => o.value === role)?.color || 'default';
+  getOperatorRoleColor(role: UserRole | string): string {
+    return ROLE_OPTS.find(o => o.value === role)?.color || 'default';
   }
 }

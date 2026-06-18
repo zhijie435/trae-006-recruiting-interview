@@ -1,23 +1,13 @@
-export type OfferStatus =
-  | 'draft'
-  | 'pending_approval'
-  | 'approved'
-  | 'rejected'
-  | 'sent'
-  | 'accepted'
-  | 'declined'
-  | 'withdrawn';
+import {
+  OfferStatus,
+  OfferAction,
+  EmploymentType,
+  OFFER_STATUS_OPTIONS,
+  EMPLOYMENT_TYPE_OPTIONS
+} from '../constants';
 
-export type OfferAction =
-  | 'submit'
-  | 'approve'
-  | 'reject'
-  | 'rollback'
-  | 'send'
-  | 'accept'
-  | 'decline'
-  | 'withdraw'
-  | 'edit';
+export type OfferStatusAlias = OfferStatus;
+export type OfferActionAlias = OfferAction;
 
 export interface ApprovalLog {
   step: number;
@@ -46,7 +36,7 @@ export interface Offer {
   candidateEmail?: string;
   position: string;
   department: string;
-  employmentType: string;
+  employmentType: EmploymentType | string;
   employmentTypeLabel?: string;
   workLocation?: string;
   salaryMonthly?: number;
@@ -97,7 +87,7 @@ export interface OfferFormInput {
   candidateEmail?: string;
   position: string;
   department: string;
-  employmentType: string;
+  employmentType: EmploymentType | string;
   workLocation?: string;
   salaryMonthly?: number;
   salaryMonths?: number;
@@ -114,21 +104,7 @@ export interface PaginatedOffers {
   pageSize: number;
 }
 
-export const OFFER_STATUS_OPTIONS: Array<{ label: string; value: OfferStatus | '' }> = [
-  { label: '全部', value: '' },
-  { label: '草稿', value: 'draft' },
-  { label: '审批中', value: 'pending_approval' },
-  { label: '审批通过', value: 'approved' },
-  { label: '审批驳回', value: 'rejected' },
-  { label: '已发出', value: 'sent' },
-  { label: '候选人接受', value: 'accepted' },
-  { label: '候选人拒绝', value: 'declined' },
-  { label: '已撤回', value: 'withdrawn' }
-];
-
-export const EMPLOYMENT_TYPE_OPTIONS = [
-  { label: '全职', value: 'full_time' },
-  { label: '兼职', value: 'part_time' },
-  { label: '外包', value: 'contract' },
-  { label: '实习', value: 'intern' }
-];
+export {
+  OFFER_STATUS_OPTIONS,
+  EMPLOYMENT_TYPE_OPTIONS
+};

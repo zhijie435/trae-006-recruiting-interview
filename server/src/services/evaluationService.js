@@ -81,7 +81,11 @@ async function getInterviewerPendingList(interviewerId, query = {}) {
   if (status && status !== '') {
     if (status === 'pending') {
       pipeline.push({
-        $match: { computedStatus: { $in: ['pending', 'overdue'] } }
+        $match: { computedStatus: 'pending' }
+      });
+    } else if (status === 'overdue') {
+      pipeline.push({
+        $match: { computedStatus: 'overdue' }
       });
     } else if (status === 'draft') {
       pipeline.push({

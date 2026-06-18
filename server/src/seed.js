@@ -253,7 +253,7 @@ async function seed() {
   console.log(`✅ 已创建 ${createdEvaluations.length} 条评价数据（${submittedInterviews.length}条已提交/${draftInterviews.length}条草稿）`);
 
   console.log('\n📦 初始化 Offer 审批数据...');
-  const offerService = require('../services/offerService');
+  const offerService = require('./services/offerService');
 
   const offerDraft = await offerService.createOffer({
     candidateName: '张三',
@@ -723,8 +723,13 @@ async function seed() {
   console.log(`   草稿中: ${draftInterviews.length}`);
   console.log(`   日程冲突: ${scheduleConflicts.length}`);
   console.log(`   候选人沟通记录: ${candidateCommunications.length}`);
+}
 
-  process.exit(0);
+if (require.main === module) {
+  seed().then(() => process.exit(0)).catch(err => {
+    console.error('初始化失败:', err);
+    process.exit(1);
+  });
 }
 
 module.exports = { seed };

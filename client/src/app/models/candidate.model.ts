@@ -1,3 +1,17 @@
+import {
+  InterviewType,
+  InterviewStatus,
+  EvaluationStatus,
+  RecommendationType,
+  CommunicationType,
+  CommunicationDirection,
+  UserRoleType,
+  COMMUNICATION_TYPE_OPTIONS,
+  DIRECTION_OPTIONS,
+  OPERATOR_ROLE_OPTIONS,
+  ScoreDimensionMeta
+} from '../constants';
+
 export interface Candidate {
   id: string;
   name: string;
@@ -7,16 +21,16 @@ export interface Candidate {
   department: string;
   interviewCount?: number;
   latestInterviewTime?: string;
-  latestInterviewStatus?: string;
-  latestEvaluationStatus?: string;
+  latestInterviewStatus?: InterviewStatus;
+  latestEvaluationStatus?: EvaluationStatus;
   communicationCount?: number;
   createdAt: string;
   updatedAt: string;
 }
 
-export type CommunicationType = 'email' | 'phone' | 'onsite' | 'video' | 'note' | 'system';
-export type CommunicationDirection = 'outbound' | 'inbound' | 'internal';
-export type OperatorRole = 'hr' | 'interviewer' | 'admin';
+export type CommunicationTypeAlias = CommunicationType;
+export type CommunicationDirectionAlias = CommunicationDirection;
+export type OperatorRole = UserRoleType;
 
 export interface CandidateCommunication {
   id: string;
@@ -40,17 +54,17 @@ export interface CandidateCommunication {
 export interface InterviewInfo {
   id: string;
   interviewTime: string;
-  interviewType: 'phone' | 'onsite' | 'video' | 'final';
+  interviewType: InterviewType;
   round: number;
-  status: 'pending' | 'completed' | 'cancelled';
-  evaluationStatus: 'pending' | 'submitted' | 'overdue';
+  status: InterviewStatus;
+  evaluationStatus: EvaluationStatus;
   evaluationDeadline: string;
   interviewerName: string;
   interviewerRole?: string;
   evaluations?: {
     id: string;
     overallScore?: number;
-    recommendation?: string;
+    recommendation?: RecommendationType;
     status: string;
     submittedAt?: string;
   }[];
@@ -94,26 +108,11 @@ export interface CommunicationQueryParams {
   pageSize?: number;
 }
 
-export const COMMUNICATION_TYPE_OPTIONS = [
-  { value: 'email', label: '邮件', color: 'blue', icon: 'mail' },
-  { value: 'phone', label: '电话', color: 'green', icon: 'phone' },
-  { value: 'onsite', label: '现场', color: 'purple', icon: 'home' },
-  { value: 'video', label: '视频', color: 'cyan', icon: 'video-camera' },
-  { value: 'note', label: '备注', color: 'orange', icon: 'file-text' },
-  { value: 'system', label: '系统', color: 'default', icon: 'setting' }
-];
-
-export const DIRECTION_OPTIONS = [
-  { value: 'outbound', label: '主动联系', color: 'blue' },
-  { value: 'inbound', label: '候选人来电', color: 'green' },
-  { value: 'internal', label: '内部沟通', color: 'orange' }
-];
-
-export const OPERATOR_ROLE_OPTIONS = [
-  { value: 'hr', label: 'HR', color: 'blue' },
-  { value: 'interviewer', label: '面试官', color: 'purple' },
-  { value: 'admin', label: '管理员', color: 'red' }
-];
+export {
+  COMMUNICATION_TYPE_OPTIONS,
+  DIRECTION_OPTIONS,
+  OPERATOR_ROLE_OPTIONS
+};
 
 export interface PaginatedResult<T> {
   list: T[];
