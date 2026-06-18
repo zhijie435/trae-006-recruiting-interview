@@ -44,8 +44,15 @@ async function getReminderList(query) {
     {
       $lookup: {
         from: 'reminders',
-        localField: '_id',
-        foreignField: 'interviewId',
+        let: { interviewId: '$_id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $eq: ['$interviewId', '$$interviewId'] },
+              type: 'evaluation'
+            }
+          }
+        ],
         as: 'reminders'
       }
     },
@@ -136,6 +143,7 @@ async function getStatistics() {
   endOfToday.setHours(23, 59, 59, 999);
 
   const todayReminderCount = await Reminder.countDocuments({
+    type: 'evaluation',
     createdAt: { $gte: startOfToday, $lte: endOfToday }
   });
 
@@ -144,6 +152,7 @@ async function getStatistics() {
   startOfWeek.setHours(0, 0, 0, 0);
 
   const thisWeekReminderCount = await Reminder.countDocuments({
+    type: 'evaluation',
     createdAt: { $gte: startOfWeek }
   });
 
@@ -230,7 +239,7 @@ async function sendBatchReminders(interviewIds, note) {
 }
 
 async function getReminderHistory(interviewId) {
-  const reminders = await Reminder.find({ interviewId }).sort({ createdAt: -1 });
+  const reminders = await Reminder.find({ interviewId, type: 'evaluation' }).sort({ createdAt: -1 });
 
   return reminders.map(reminder => ({
     id: reminder._id.toString(),

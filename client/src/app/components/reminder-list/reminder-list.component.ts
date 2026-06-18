@@ -160,9 +160,9 @@ import { NzModalService } from 'ng-zorro-antd/modal';
               <td>{{ formatDate(data.interview.interviewTime) }}</td>
               <td [ngClass]="{'urgent': isOverdue(data.interview.evaluationDeadline)}">
                 {{ formatDate(data.interview.evaluationDeadline) }}
-                <nz-tooltip *ngIf="isOverdue(data.interview.evaluationDeadline)" [nzTitle]="'已逾期' + getOverdueDays(data.interview.evaluationDeadline) + '天'">
+                <span *ngIf="isOverdue(data.interview.evaluationDeadline)" nz-tooltip [nzTooltipTitle]="'已逾期' + getOverdueDays(data.interview.evaluationDeadline) + '天'">
                   <i nz-icon nzType="exclamation-circle" class="urgent" style="margin-left: 4px;"></i>
-                </nz-tooltip>
+                </span>
               </td>
               <td>
                 <nz-tag *ngIf="data.interview.evaluationStatus === 'pending'" nzColor="gold">待评价</nz-tag>

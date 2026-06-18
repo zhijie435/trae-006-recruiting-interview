@@ -5,10 +5,12 @@ import { EvaluationListComponent } from './components/evaluation-list/evaluation
 import { EvaluationFormComponent } from './components/evaluation-form/evaluation-form.component';
 import { OfferListComponent } from './components/offer-list/offer-list.component';
 import { OfferDetailComponent } from './components/offer-detail/offer-detail.component';
+import { ConflictListComponent } from './components/conflict-list/conflict-list.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/evaluations', pathMatch: 'full' },
   { path: 'reminders', component: ReminderListComponent },
+  { path: 'conflicts', component: ConflictListComponent },
   { path: 'evaluations', component: EvaluationListComponent },
   { path: 'evaluations/:interviewId', component: EvaluationFormComponent },
   { path: 'offers', component: OfferListComponent },

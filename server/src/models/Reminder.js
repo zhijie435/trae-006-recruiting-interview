@@ -5,7 +5,7 @@ const reminderSchema = new mongoose.Schema({
   interview: { type: mongoose.Schema.Types.Mixed, required: true },
   type: {
     type: String,
-    enum: ['evaluation'],
+    enum: ['evaluation', 'schedule_conflict'],
     default: 'evaluation'
   },
   status: {
@@ -21,11 +21,13 @@ const reminderSchema = new mongoose.Schema({
   sentAt: { type: Date },
   createdBy: { type: String, default: 'system' },
   note: { type: String },
-  errorMessage: { type: String }
+  errorMessage: { type: String },
+  conflictKey: { type: String, default: null }
 }, { timestamps: true });
 
 reminderSchema.index({ interviewId: 1 });
 reminderSchema.index({ status: 1 });
 reminderSchema.index({ createdAt: -1 });
+reminderSchema.index({ conflictKey: 1 });
 
 module.exports = mongoose.model('Reminder', reminderSchema);

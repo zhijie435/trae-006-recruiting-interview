@@ -11,19 +11,24 @@ import { Router } from '@angular/router';
             <i nz-icon nzType="team" style="margin-right: 8px;"></i>
             招聘面试管理系统
           </div>
-          <ul nz-menu nzTheme="dark" nzMode="horizontal" style="flex: 1; border: 0;" [nzSelectedKeys]="selectedMenu">
-            <li nz-menu-item (click)="router.navigate(['/evaluations'])" nzValue="evaluations">
+          <ul nz-menu nzTheme="dark" nzMode="horizontal" style="flex: 1; border: 0;">
+            <li nz-menu-item (click)="router.navigate(['/evaluations'])" [nzSelected]="selectedMenu === 'evaluations'">
               <i nz-icon nzType="edit" style="margin-right: 8px;"></i>
               我的评价
               <nz-badge [nzCount]="stats.overdueCount" nzSize="small" [nzOffset]="[4, -2]" *ngIf="stats.overdueCount > 0" style="margin-left: 4px;"></nz-badge>
             </li>
-            <li nz-menu-item (click)="router.navigate(['/offers'])" nzValue="offers">
+            <li nz-menu-item (click)="router.navigate(['/offers'])" [nzSelected]="selectedMenu === 'offers'">
               <i nz-icon nzType="audit" style="margin-right: 8px;"></i>
               Offer 管理
             </li>
-            <li nz-menu-item (click)="router.navigate(['/reminders'])" nzValue="reminders">
+            <li nz-menu-item (click)="router.navigate(['/reminders'])" [nzSelected]="selectedMenu === 'reminders'">
               <i nz-icon nzType="bell" style="margin-right: 8px;"></i>
               评价催办
+            </li>
+            <li nz-menu-item (click)="router.navigate(['/conflicts'])" [nzSelected]="selectedMenu === 'conflicts'">
+              <i nz-icon nzType="calendar" style="margin-right: 8px;"></i>
+              日程冲突
+              <nz-badge [nzCount]="stats.conflictPendingCount" nzSize="small" [nzOffset]="[4, -2]" *ngIf="stats.conflictPendingCount > 0" style="margin-left: 4px;"></nz-badge>
             </li>
           </ul>
           <div style="color: rgba(255,255,255,0.65); font-size: 14px;">
@@ -39,15 +44,14 @@ import { Router } from '@angular/router';
   `
 })
 export class AppComponent implements OnInit {
-  selectedMenu = ['evaluations'];
-  stats = { overdueCount: 0 };
+  selectedMenu = 'evaluations';
+  stats = { overdueCount: 0, conflictPendingCount: 0 };
 
   constructor(public router: Router) {}
 
   ngOnInit(): void {
     this.router.events.subscribe(() => {
-      const url = this.router.url.split('/')[1] || 'evaluations';
-      this.selectedMenu = [url];
+      this.selectedMenu = this.router.url.split('/')[1] || 'evaluations';
     });
   }
 }

@@ -39,6 +39,7 @@ import { EvaluationListComponent } from './components/evaluation-list/evaluation
 import { EvaluationFormComponent } from './components/evaluation-form/evaluation-form.component';
 import { OfferListComponent } from './components/offer-list/offer-list.component';
 import { OfferDetailComponent } from './components/offer-detail/offer-detail.component';
+import { ConflictListComponent } from './components/conflict-list/conflict-list.component';
 
 import { IconDefinition } from '@ant-design/icons-angular';
 import {
@@ -70,7 +71,8 @@ import {
   CloseOutline,
   SolutionOutline,
   HistoryOutline,
-  ThunderboltOutline
+  ThunderboltOutline,
+  CalendarOutline
 } from '@ant-design/icons-angular/icons';
 
 const icons: IconDefinition[] = [
@@ -102,7 +104,8 @@ const icons: IconDefinition[] = [
   CloseOutline,
   SolutionOutline,
   HistoryOutline,
-  ThunderboltOutline
+  ThunderboltOutline,
+  CalendarOutline
 ];
 
 @NgModule({
@@ -112,7 +115,8 @@ const icons: IconDefinition[] = [
     EvaluationListComponent,
     EvaluationFormComponent,
     OfferListComponent,
-    OfferDetailComponent
+    OfferDetailComponent,
+    ConflictListComponent
   ],
   imports: [
     BrowserModule,

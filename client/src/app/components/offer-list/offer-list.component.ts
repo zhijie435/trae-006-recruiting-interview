@@ -72,7 +72,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
         </nz-col>
         <nz-col [nzSpan]="3">
           <div class="stat-card">
-            <div class="stat-value urgent">{{ stats?.rejected + (stats?.declined || 0) }}</div>
+            <div class="stat-value urgent">{{ (stats?.rejected || 0) + (stats?.declined || 0) }}</div>
             <div class="stat-label">驳回/拒绝</div>
           </div>
         </nz-col>

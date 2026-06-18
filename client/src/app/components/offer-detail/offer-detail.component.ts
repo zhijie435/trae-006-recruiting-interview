@@ -234,8 +234,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
                 <div class="info-item">
                   <div class="info-label">月薪</div>
                   <div class="info-value" *ngIf="offer?.salaryMonthly" style="color: #fa541c; font-weight: 600;">
-                    ¥{{ formatSalary(offer.salaryMonthly) }}
-                    <span style="color: rgba(0,0,0,0.45); font-weight: normal; font-size: 13px;">× {{ offer.salaryMonths }}月</span>
+                    ¥{{ formatSalary(offer!.salaryMonthly!) }}
+                    <span style="color: rgba(0,0,0,0.45); font-weight: normal; font-size: 13px;">× {{ offer!.salaryMonths }}月</span>
                   </div>
                   <div class="info-value" *ngIf="!offer?.salaryMonthly">-</div>
                 </div>
@@ -467,7 +467,7 @@ export class OfferDetailComponent implements OnInit {
           this.loadOffer();
           resolve();
         },
-        error: (err) => {
+        error: (err: any) => {
           this.message.error(err?.error?.message || '操作失败');
           reject();
         }

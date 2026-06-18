@@ -6,6 +6,7 @@ const Interview = require('../models/Interview');
 const Reminder = require('../models/Reminder');
 const Evaluation = require('../models/Evaluation');
 const Offer = require('../models/Offer');
+const ScheduleConflict = require('../models/ScheduleConflict');
 
 const candidatesData = [
   { name: '张三', email: 'zhangsan@example.com', phone: '13800138001', position: '前端工程师', department: '技术部' },
@@ -50,6 +51,7 @@ async function seed() {
   await Reminder.deleteMany({});
   await Evaluation.deleteMany({});
   await Offer.deleteMany({});
+  await ScheduleConflict.deleteMany({});
 
   const candidates = await Candidate.create(candidatesData);
   const interviewers = await Interviewer.create(interviewersData);
@@ -313,6 +315,266 @@ async function seed() {
   const offerCount = await Offer.countDocuments();
   console.log(`✅ 已创建 ${offerCount} 条 Offer 数据（覆盖草稿/审批中/已通过/已发出/已接受/已驳回/候选人拒绝 各状态）`);
 
+  console.log('\n📦 初始化日程冲突测试数据...');
+  const baseTime = new Date();
+  baseTime.setDate(baseTime.getDate() + 3);
+  baseTime.setHours(14, 0, 0, 0);
+
+  const conflictInterviews1 = [
+    {
+      candidateName: '张三',
+      candidateEmail: 'zhangsan@example.com',
+      interviewerName: '陈技术',
+      interviewerEmail: 'chenjishu@company.com',
+      interviewTime: new Date(baseTime.getTime()),
+      interviewType: 'onsite',
+      round: 2,
+      position: '前端工程师',
+      department: '技术部'
+    },
+    {
+      candidateName: '周八',
+      candidateEmail: 'zhouba@example.com',
+      interviewerName: '陈技术',
+      interviewerEmail: 'chenjishu@company.com',
+      interviewTime: new Date(baseTime.getTime()),
+      interviewType: 'video',
+      round: 1,
+      position: '全栈工程师',
+      department: '技术部'
+    }
+  ];
+
+  const baseTime2 = new Date();
+  baseTime2.setDate(baseTime2.getDate() + 2);
+  baseTime2.setHours(10, 0, 0, 0);
+
+  const conflictInterviews2 = [
+    {
+      candidateName: '李四',
+      candidateEmail: 'lisi@example.com',
+      interviewerName: '林架构',
+      interviewerEmail: 'linjiagou@company.com',
+      interviewTime: new Date(baseTime2.getTime()),
+      interviewType: 'onsite',
+      round: 3,
+      position: '后端工程师',
+      department: '技术部'
+    },
+    {
+      candidateName: '李四',
+      candidateEmail: 'lisi@example.com',
+      interviewerName: '陈技术',
+      interviewerEmail: 'chenjishu@company.com',
+      interviewTime: new Date(baseTime2.getTime()),
+      interviewType: 'final',
+      round: 4,
+      position: '后端工程师',
+      department: '技术部'
+    }
+  ];
+
+  const baseTime3 = new Date();
+  baseTime3.setDate(baseTime3.getDate() + 1);
+  baseTime3.setHours(15, 30, 0, 0);
+
+  const conflictInterviews3 = [
+    {
+      candidateName: '王五',
+      candidateEmail: 'wangwu@example.com',
+      interviewerName: '刘产品',
+      interviewerEmail: 'liuchanpin@company.com',
+      interviewTime: new Date(baseTime3.getTime()),
+      interviewType: 'onsite',
+      round: 2,
+      position: '产品经理',
+      department: '产品部'
+    },
+    {
+      candidateName: '吴九',
+      candidateEmail: 'wujiu@example.com',
+      interviewerName: '刘产品',
+      interviewerEmail: 'liuchanpin@company.com',
+      interviewTime: new Date(baseTime3.getTime()),
+      interviewType: 'phone',
+      round: 1,
+      position: '高级产品经理',
+      department: '产品部'
+    },
+    {
+      candidateName: '孙七',
+      candidateEmail: 'sunqi@example.com',
+      interviewerName: '刘产品',
+      interviewerEmail: 'liuchanpin@company.com',
+      interviewTime: new Date(baseTime3.getTime()),
+      interviewType: 'video',
+      round: 1,
+      position: '运营专员',
+      department: '运营部'
+    }
+  ];
+
+  const scheduleConflictsData = [
+    {
+      conflictType: 'interviewer_schedule',
+      status: 'pending',
+      priority: 'high',
+      title: '面试官「陈技术」下午2点双场面冲突',
+      description: '陈技术总监在同一时间段被安排了两场面试，需要协调其中一场改期',
+      interviews: conflictInterviews1,
+      assignee: 'HR-小李',
+      createdBy: 'system',
+      communications: [
+        {
+          type: 'note',
+          content: '系统检测到面试官时间冲突，请HR尽快协调处理',
+          operator: 'system',
+          target: 'HR-小李',
+          createdAt: new Date()
+        }
+      ]
+    },
+    {
+      conflictType: 'candidate_schedule',
+      status: 'communicating',
+      priority: 'high',
+      title: '候选人「李四」时间冲突',
+      description: '候选人李四在同一时间段有两场面试（终面和架构面），需要紧急协调',
+      interviews: conflictInterviews2,
+      assignee: 'HR-小王',
+      createdBy: 'HR-小李',
+      reminderCount: 1,
+      lastReminderAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+      communications: [
+        {
+          type: 'note',
+          content: '已电话联系候选人李四，他表示下午3点后有空，正在协调面试官时间',
+          operator: 'HR-小王',
+          target: '李四',
+          createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000)
+        },
+        {
+          type: 'email_sent',
+          content: '已向林架构和陈技术发送协调邮件，请求确认新的面试时间',
+          operator: 'HR-小王',
+          target: '林架构,陈技术',
+          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000)
+        }
+      ]
+    },
+    {
+      conflictType: 'interviewer_schedule',
+      status: 'pending',
+      priority: 'high',
+      title: '面试官「刘产品」同时安排3场面试',
+      description: '刘产品总监在下午3点半被安排了3场面试，严重冲突，需要优先处理',
+      interviews: conflictInterviews3,
+      assignee: 'HR-小李',
+      createdBy: 'system',
+      communications: [
+        {
+          type: 'note',
+          content: '系统检测到高优先级冲突：同一面试官3场面试冲突',
+          operator: 'system',
+          target: 'HR-小李',
+          createdAt: new Date()
+        }
+      ]
+    },
+    {
+      conflictType: 'room_conflict',
+      status: 'communicating',
+      priority: 'medium',
+      title: '会议室「A301」占用冲突',
+      description: '明天上午10点A301会议室同时被两场现场面试预约',
+      interviews: [
+        {
+          candidateName: '赵六',
+          candidateEmail: 'zhaoliu@example.com',
+          interviewerName: '黄设计',
+          interviewerEmail: 'huangsheji@company.com',
+          interviewTime: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000),
+          interviewType: 'onsite',
+          round: 1,
+          position: 'UI设计师',
+          department: '设计部'
+        },
+        {
+          candidateName: '郑十',
+          candidateEmail: 'zhengshi@example.com',
+          interviewerName: '黄设计',
+          interviewerEmail: 'huangsheji@company.com',
+          interviewTime: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000),
+          interviewType: 'onsite',
+          round: 2,
+          position: '交互设计师',
+          department: '设计部'
+        }
+      ],
+      roomName: 'A301-小型面试间',
+      assignee: 'HR-小王',
+      createdBy: 'HR-小李',
+      communications: [
+        {
+          type: 'note',
+          content: '已查看A301预约情况，下午可安排B203会议室作为替代方案',
+          operator: 'HR-小王',
+          createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000)
+        }
+      ]
+    },
+    {
+      conflictType: 'multi_interview_conflict',
+      status: 'resolved',
+      priority: 'low',
+      title: '已解决：「杨运营」面试与部门周会冲突',
+      description: '运营总监的面试时间与部门周会时间重叠，已协调改期',
+      interviews: [
+        {
+          candidateName: '孙七',
+          candidateEmail: 'sunqi@example.com',
+          interviewerName: '杨运营',
+          interviewerEmail: 'yangyunying@company.com',
+          interviewTime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+          interviewType: 'onsite',
+          round: 2,
+          position: '运营专员',
+          department: '运营部'
+        }
+      ],
+      assignee: 'HR-小李',
+      resolvedAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
+      resolvedBy: 'HR-小李',
+      resolution: '已将面试时间从周一下午2点调整至周二上午10点，双方已确认',
+      createdBy: 'HR-小李',
+      communications: [
+        {
+          type: 'call',
+          content: '电话联系杨运营总监，确认周二上午10点有空',
+          operator: 'HR-小李',
+          target: '杨运营',
+          createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000)
+        },
+        {
+          type: 'email_sent',
+          content: '已向候选人孙七发送改期确认邮件',
+          operator: 'HR-小李',
+          target: '孙七',
+          createdAt: new Date(Date.now() - 20 * 60 * 60 * 1000)
+        },
+        {
+          type: 'note',
+          content: '双方均已确认新时间，冲突解决',
+          operator: 'HR-小李',
+          createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000)
+        }
+      ]
+    }
+  ];
+
+  const scheduleConflicts = await ScheduleConflict.create(scheduleConflictsData);
+  console.log(`✅ 已创建 ${scheduleConflicts.length} 条日程冲突数据（覆盖待处理/沟通中/已解决 各状态）`);
+
   console.log('\n🎉 测试数据初始化完成！');
   console.log('\n📊 数据统计:');
   console.log(`   候选人: ${candidates.length}`);
@@ -323,6 +585,7 @@ async function seed() {
   console.log(`   待评价: ${interviews.filter(i => i.evaluationStatus === 'pending').length}`);
   console.log(`   已提交评价: ${submittedInterviews.length}`);
   console.log(`   草稿中: ${draftInterviews.length}`);
+  console.log(`   日程冲突: ${scheduleConflicts.length}`);
 
   process.exit(0);
 }
