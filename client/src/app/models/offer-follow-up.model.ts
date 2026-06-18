@@ -2,7 +2,20 @@ export type OfferFollowUpStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED
 
 export type FollowUpChannel = 'PHONE' | 'EMAIL' | 'SMS' | 'WECHAT';
 
-export type SlaRiskLevel = 'NORMAL' | 'WARNING' | 'OVERDUE';
+export type SlaRisk = '' | 'NORMAL' | 'WARNING' | 'OVERDUE';
+
+export interface FollowUpRecord {
+  id: string;
+  offerId: string;
+  channel: FollowUpChannel;
+  templateId?: string;
+  templateName?: string;
+  content: string;
+  result: string;
+  operator: string;
+  operatedAt: string;
+  nextFollowUpAt?: string;
+}
 
 export interface OfferFollowUp {
   id: string;
@@ -15,27 +28,12 @@ export interface OfferFollowUp {
   salaryPackage: string;
   entryDate: string;
   owner: string;
-  ownerAvatar?: string;
-  status: OfferFollowUpStatus;
-  slaDeadline: string;
   expireAt: string;
   createdAt: string;
   updatedAt: string;
-  followUpRecords: FollowUpRecord[];
+  status: OfferFollowUpStatus;
   remark?: string;
-}
-
-export interface FollowUpRecord {
-  id: string;
-  offerId: string;
-  channel: FollowUpChannel;
-  templateId?: string;
-  templateName?: string;
-  content: string;
-  result: string;
-  nextFollowUpAt?: string;
-  operator: string;
-  operatedAt: string;
+  followUpRecords?: FollowUpRecord[];
 }
 
 export interface FollowUpTemplate {
@@ -69,7 +67,7 @@ export interface OfferFollowUpQueryParams {
   keyword?: string;
   status?: OfferFollowUpStatus | '';
   department?: string;
-  slaRisk?: SlaRiskLevel | '';
+  slaRisk?: SlaRisk;
   owner?: string;
   page?: number;
   pageSize?: number;
@@ -78,39 +76,72 @@ export interface OfferFollowUpQueryParams {
 export interface PaginatedOfferFollowUps {
   list: OfferFollowUp[];
   total: number;
-  page: number;
-  pageSize: number;
 }
 
-export const OFFER_FOLLOW_UP_STATUS_OPTIONS: Array<{ label: string; value: OfferFollowUpStatus | ''; color: string }> = [
-  { label: '全部', value: '', color: '' },
-  { label: '待回复', value: 'PENDING', color: '#E0A458' },
-  { label: '已接受', value: 'ACCEPTED', color: '#2E7D6B' },
-  { label: '已拒绝', value: 'REJECTED', color: '#B5462F' },
-  { label: '已过期', value: 'EXPIRED', color: '#8A8F98' },
-  { label: '已入职', value: 'ONBOARDED', color: '#0F3D3E' }
+export interface FollowUpRecordInput {
+  offerId: string;
+  channel: FollowUpChannel;
+  templateId?: string;
+  templateName?: string;
+  content: string;
+  result: string;
+  nextFollowUpAt?: string;
+  operator: string;
+}
+
+export interface StatusInfo {
+  label: string;
+  color: string;
+  bgColor: string;
+}
+
+export interface ChannelInfo {
+  label: string;
+  color: string;
+  icon: string;
+}
+
+export interface OptionItem<T = string> {
+  label: string;
+  value: T;
+  icon?: string;
+}
+
+export interface TemplateVariable {
+  key: string;
+  label: string;
+  example: string;
+}
+
+export const OFFER_FOLLOW_UP_STATUS_OPTIONS: OptionItem<OfferFollowUpStatus>[] = [
+  { label: '待回复', value: 'PENDING' },
+  { label: '已接受', value: 'ACCEPTED' },
+  { label: '已拒绝', value: 'REJECTED' },
+  { label: '已过期', value: 'EXPIRED' },
+  { label: '已入职', value: 'ONBOARDED' }
 ];
 
-export const FOLLOW_UP_CHANNEL_OPTIONS: Array<{ label: string; value: FollowUpChannel; icon: string; color: string }> = [
-  { label: '电话', value: 'PHONE', icon: 'phone', color: '#0F3D3E' },
-  { label: '邮件', value: 'EMAIL', icon: 'mail', color: '#1890ff' },
-  { label: '短信', value: 'SMS', icon: 'message', color: '#E0A458' },
-  { label: '企业微信', value: 'WECHAT', icon: 'wechat', color: '#2E7D6B' }
+export const SLA_RISK_OPTIONS: OptionItem<SlaRisk>[] = [
+  { label: '全部', value: '' },
+  { label: '正常', value: 'NORMAL' },
+  { label: '临期', value: 'WARNING' },
+  { label: '已超时', value: 'OVERDUE' }
 ];
 
-export const SLA_RISK_OPTIONS: Array<{ label: string; value: SlaRiskLevel | ''; color: string }> = [
-  { label: '全部', value: '', color: '' },
-  { label: '正常', value: 'NORMAL', color: '#2E7D6B' },
-  { label: '临期', value: 'WARNING', color: '#E0A458' },
-  { label: '已超时', value: 'OVERDUE', color: '#B5462F' }
+export const FOLLOW_UP_CHANNEL_OPTIONS: OptionItem<FollowUpChannel>[] = [
+  { label: '电话', value: 'PHONE', icon: 'phone' },
+  { label: '邮件', value: 'EMAIL', icon: 'mail' },
+  { label: '短信', value: 'SMS', icon: 'message' },
+  { label: '企业微信', value: 'WECHAT', icon: 'wechat' }
 ];
 
-export const TEMPLATE_VARIABLES = [
-  { key: '{{候选人姓名}}', label: '候选人姓名', example: '张三' },
-  { key: '{{职位名称}}', label: '职位名称', example: '高级前端工程师' },
-  { key: '{{部门名称}}', label: '部门名称', example: '技术部' },
-  { key: '{{薪资待遇}}', label: '薪资待遇', example: '30K × 15薪' },
-  { key: '{{入职日期}}', label: '入职日期', example: '2025-03-01' },
-  { key: '{{Offer编号}}', label: 'Offer编号', example: 'OFR-2025-0001' },
-  { key: '{{SLA截止时间}}', label: 'SLA截止时间', example: '2025-02-28 18:00' }
+export const TEMPLATE_VARIABLES: TemplateVariable[] = [
+  { key: '${candidateName}', label: '候选人姓名', example: '张三' },
+  { key: '${position}', label: '岗位名称', example: '高级前端工程师' },
+  { key: '${department}', label: '所属部门', example: '技术部' },
+  { key: '${salaryPackage}', label: '薪资待遇', example: '30K × 15薪' },
+  { key: '${entryDate}', label: '入职日期', example: '2025-03-01' },
+  { key: '${offerNo}', label: 'Offer编号', example: 'OFR-2025-0001' },
+  { key: '${expireDate}', label: '截止日期', example: '2025-02-20' },
+  { key: '${owner}', label: '责任人', example: '李HR' }
 ];

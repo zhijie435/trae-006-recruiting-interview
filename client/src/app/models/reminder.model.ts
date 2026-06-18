@@ -8,6 +8,8 @@ import {
   RecommendationType
 } from '../constants';
 
+export { InterviewType, InterviewStatus, EvaluationStatus, ReminderType, ReminderStatus, ReminderChannel, RecommendationType };
+
 export interface Candidate {
   id: string;
   name: string;
